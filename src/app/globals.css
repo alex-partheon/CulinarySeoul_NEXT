@@ -1,0 +1,339 @@
+/* Pretendard 폰트 임포트 */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* ===== CashUp 브랜드 컬러 시스템 (theme.md 기반) ===== */
+
+  /* CashGreen - 주요 브랜드 색상 */
+  --color-cash-green-50: #f0fdf4;
+  --color-cash-green-100: #dcfce7;
+  --color-cash-green-200: #bbf7d0;
+  --color-cash-green-300: #86efac;
+  --color-cash-green-400: #4ade80;
+  --color-cash-green-500: #22c55e;
+  --color-cash-green-600: #16a34a;
+  --color-cash-green-700: #15803d;
+  --color-cash-green-800: #166534;
+  --color-cash-green-900: #14532d;
+
+  /* CashBlue - 보조 브랜드 색상 */
+  --color-cash-blue-50: #eff6ff;
+  --color-cash-blue-100: #dbeafe;
+  --color-cash-blue-200: #bfdbfe;
+  --color-cash-blue-300: #93c5fd;
+  --color-cash-blue-400: #60a5fa;
+  --color-cash-blue-500: #3b82f6;
+  --color-cash-blue-600: #2563eb;
+  --color-cash-blue-700: #1d4ed8;
+  --color-cash-blue-800: #1e40af;
+  --color-cash-blue-900: #1e3a8a;
+
+  /* 기본 색상 매핑 */
+  --color-primary: var(--color-cash-green-500);
+  --color-primary-hover: var(--color-cash-green-600);
+  --color-primary-light: var(--color-cash-green-100);
+
+  --color-secondary: var(--color-cash-blue-500);
+  --color-secondary-hover: var(--color-cash-blue-600);
+  --color-secondary-light: var(--color-cash-blue-100);
+
+  /* 시맨틱 색상 */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* ===== 대시보드별 테마 색상 ===== */
+
+  /* 크리에이터 대시보드 */
+  --color-creator-primary: #3b82f6;
+  --color-creator-secondary: #60a5fa;
+  --color-creator-accent: #dbeafe;
+
+  /* 비즈니스 대시보드 */
+  --color-business-primary: #10b981;
+  --color-business-secondary: #34d399;
+  --color-business-accent: #d1fae5;
+
+  /* 관리자 대시보드 */
+  --color-admin-primary: #6366f1;
+  --color-admin-secondary: #818cf8;
+  --color-admin-accent: #e0e7ff;
+
+  /* ===== 공개페이지 테마 프리셋 ===== */
+
+  /* 기본 테마 */
+  --color-theme-default: #22c55e;
+
+  /* 미니멀 테마 */
+  --color-theme-minimal: #6b7280;
+
+  /* 프로페셔널 테마 */
+  --color-theme-professional: #1e40af;
+
+  /* 크리에이티브 테마 */
+  --color-theme-creative: #dc2626;
+
+  /* ===== 레이아웃 & 효과 ===== */
+
+  /* 그림자 */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  /* 뉴모피즘 그림자 */
+  --shadow-neumorphic: 5px 5px 15px rgba(0, 0, 0, 0.1), -5px -5px 15px rgba(255, 255, 255, 0.9);
+  --shadow-neumorphic-hover: 2px 2px 5px rgba(0, 0, 0, 0.1), -2px -2px 5px rgba(255, 255, 255, 0.9);
+
+  /* 반경 */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* 간격 */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+
+  /* 애니메이션 속도 */
+  --duration-instant: 50ms;
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-slower: 700ms;
+
+  /* 타이포그래피 */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+
+  /* Z-index 레이어 */
+  --z-base: 0;
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-fixed: 30;
+  --z-modal-backdrop: 40;
+  --z-modal: 50;
+  --z-popover: 60;
+  --z-tooltip: 70;
+}
+
+/* 영역별 CSS 변수 오버라이드 */
+[data-area='dashboard'][data-theme='creator'] {
+  --color-primary: var(--color-creator-primary);
+  --color-secondary: var(--color-creator-secondary);
+  --color-accent: var(--color-creator-accent);
+}
+
+[data-area='dashboard'][data-theme='business'] {
+  --color-primary: var(--color-business-primary);
+  --color-secondary: var(--color-business-secondary);
+  --color-accent: var(--color-business-accent);
+}
+
+[data-area='dashboard'][data-theme='admin'] {
+  --color-primary: var(--color-admin-primary);
+  --color-secondary: var(--color-admin-secondary);
+  --color-accent: var(--color-admin-accent);
+}
+
+[data-area='public'][data-theme='default'] {
+  --color-primary: var(--color-theme-default);
+}
+
+[data-area='public'][data-theme='minimal'] {
+  --color-primary: var(--color-theme-minimal);
+}
+
+[data-area='public'][data-theme='professional'] {
+  --color-primary: var(--color-theme-professional);
+}
+
+[data-area='public'][data-theme='creative'] {
+  --color-primary: var(--color-theme-creative);
+}
+
+/* Tailwind v3에서는 @theme inline이 지원되지 않으므로 제거됨 */
+
+/* 기본 스타일 리셋 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 포커스 스타일 */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 스크롤바 커스터마이징 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(203 213 225 / 0.5);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(148 163 184 / 0.5);
+}
+
+/* 커스텀 유틸리티 클래스 */
+@layer utilities {
+  /* 텍스트 그라데이션 */
+  .text-gradient-cash {
+    @apply bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-green {
+    @apply bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-blue {
+    @apply bg-gradient-to-r from-blue-500 to-sky-600 bg-clip-text text-transparent;
+  }
+
+  /* 글래스모피즘 효과 */
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/50;
+  }
+
+  .glass-subtle {
+    @apply bg-white/50 backdrop-blur-sm border border-white/30;
+  }
+
+  /* 뉴모피즘 효과 */
+  .neumorphic {
+    box-shadow: var(--shadow-neumorphic);
+  }
+
+  .neumorphic:hover {
+    box-shadow: var(--shadow-neumorphic-hover);
+  }
+
+  /* Bento Grid 카드 */
+  .bento-card {
+    @apply rounded-3xl bg-white shadow-xl border border-gray-100 overflow-hidden;
+  }
+
+  .bento-card-gradient {
+    @apply rounded-3xl shadow-xl overflow-hidden bg-gradient-to-br;
+  }
+
+  /* 카드 스타일 */
+  .card {
+    @apply rounded-2xl bg-white shadow-lg p-6 border border-gray-100;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:scale-105;
+  }
+
+  /* 버튼 호버 효과 */
+  .hover-lift {
+    @apply transition-transform duration-200 hover:-translate-y-0.5;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary-500/25;
+  }
+
+  /* 섹션 패딩 */
+  .section-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-spacing {
+    @apply py-12 sm:py-16 lg:py-20;
+  }
+
+  /* 컨테이너 */
+  .container-max {
+    @apply max-w-7xl mx-auto;
+  }
+
+  /* 그리드 갭 */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+
+  /* 애니메이션 지연 */
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
+
+  /* 그라디언트 배경 */
+  .bg-gradient-cash {
+    @apply bg-gradient-to-r from-green-500 to-blue-500;
+  }
+
+  .bg-gradient-cash-light {
+    @apply bg-gradient-to-r from-green-50 to-blue-50;
+  }
+
+  .bg-gradient-creator {
+    @apply bg-gradient-to-r from-blue-500 to-sky-400;
+  }
+
+  .bg-gradient-business {
+    @apply bg-gradient-to-r from-emerald-500 to-teal-400;
+  }
+
+  .bg-gradient-admin {
+    @apply bg-gradient-to-r from-indigo-500 to-purple-400;
+  }
+}

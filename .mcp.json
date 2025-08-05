@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "tosspayments-integration-guide": {
+      "command": "npx",
+      "args": ["@tosspayments/integration-guide-mcp@latest"],
+      "description": "TossPayments 결제 시스템 통합 가이드 - 1원 인증 및 수수료 정산 시스템"
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-memory"],
+      "description": "세션 상태 관리 및 컨텍스트 유지 - 221개 개발 태스크 진행 상황 추적"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"],
+      "description": "E2E 테스트 및 브라우저 자동화 - 멀티도메인 아키텍처 테스트"
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-context7"],
+      "description": "라이브러리 문서 참조 - Next.js, Supabase, React 패턴 가이드"
+    },
+    "git": {
+      "command": "uvx",
+      "args": ["mcp-server-git", "--repository", "/Users/alex/Dev/next/culinary"],
+      "description": "Git 워크플로우 자동화 - 8단계 개발 프로세스 브랜치 관리"
+    }
+  }
+}
