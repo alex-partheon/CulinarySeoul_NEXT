@@ -1,401 +1,428 @@
-/* Pretendard 폰트 임포트 - CulinarySeoul 브랜딩 */
+/* Tailwind CSS v4 - CSS-First Configuration */
+/* Auto-detection enabled via @tailwindcss/postcss plugin */
+
+/* Pretendard 폰트 임포트 (한글 지원) - Must come before Tailwind */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 
-/* Tailwind CSS v4 import */
-@import "tailwindcss";
+/* Tailwind CSS v4 - Modern Import */
+@import 'tailwindcss';
 
-/* Tailwind CSS v4 Theme Configuration */
-@theme {
-  /* Font Family */
-  --font-family-sans: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+@custom-variant dark (&:is(.dark *));
 
-  /* Colors - CulinarySeoul Brand System */
-  --color-primary-50: #faf5ff;
-  --color-primary-100: #f3e8ff;
-  --color-primary-200: #e9d5ff;
-  --color-primary-300: #d8b4fe;
-  --color-primary-400: #c084fc;
-  --color-primary-500: #a855f7;
-  --color-primary-600: #9333ea;
-  --color-primary-700: #7c3aed;
-  --color-primary-800: #6b21a8;
-  --color-primary-900: #581c87;
-  --color-primary-950: #3b0764;
-
-  --color-secondary-50: #eef2ff;
-  --color-secondary-100: #e0e7ff;
-  --color-secondary-200: #c7d2fe;
-  --color-secondary-300: #a5b4fc;
-  --color-secondary-400: #818cf8;
-  --color-secondary-500: #6366f1;
-  --color-secondary-600: #4f46e5;
-  --color-secondary-700: #4338ca;
-  --color-secondary-800: #3730a3;
-  --color-secondary-900: #312e81;
-  --color-secondary-950: #1e1b4b;
-
-  /* Success, Warning, Error colors */
-  --color-success-500: #22c55e;
-  --color-warning-500: #f59e0b;
-  --color-error-500: #ef4444;
-  --color-info-500: #3b82f6;
-
-  /* Custom Screens */
-  --breakpoint-xs: 475px;
-  --breakpoint-3xl: 1920px;
-
-  /* Custom Animations */
-  --animate-fade-in: fade-in 0.5s ease-in-out;
-  --animate-fade-out: fade-out 0.5s ease-in-out;
-  --animate-slide-in: slide-in 0.3s ease-out;
-  --animate-slide-out: slide-out 0.3s ease-out;
-  --animate-spin-slow: spin 3s linear infinite;
-  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-
-  /* Custom Spacing */
-  --spacing-18: 4.5rem;
-  --spacing-88: 22rem;
-  --spacing-100: 25rem;
-  --spacing-120: 30rem;
-
-  /* Custom Box Shadows */
-  --shadow-inner-sm: inset 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-inner-lg: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
-
-  /* Custom Background Images */
-  --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
-  --background-image-gradient-conic: conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops));
-  --background-image-grid-black: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(0 0 0 / 0.02)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
-}
-
+/* ===== CulinarySeoul Unified Theme System ===== */
 :root {
-  /* ===== Shadcn/ui 표준 CSS 변수 ===== */
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 262.1 83.3% 57.8%; /* CulinarySeoul Purple */
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 84% 4.9%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222.2 84% 4.9%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 262.1 83.3% 57.8%;
+  /* Base colors */
+  --background: oklch(0.9824 0.0013 286.3757);
+  --foreground: oklch(0.3211 0 0);
+
+  /* Card and popover */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.3211 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.3211 0 0);
+
+  /* Primary - Emerald green */
+  --primary: oklch(0.57 0.37 145);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary - Blue */
+  --secondary: oklch(0.59 0.35 240);
+  --secondary-foreground: oklch(1 0 0);
+
+  /* Muted */
+  --muted: oklch(0.8828 0.0285 98.1033);
+  --muted-foreground: oklch(0.5382 0 0);
+
+  /* Accent - Amber */
+  --accent: oklch(0.73 0.22 85);
+  --accent-foreground: oklch(0.3211 0 0);
+
+  /* Destructive */
+  --destructive: oklch(0.63 0.27 27);
+  --destructive-foreground: oklch(1 0 0);
+
+  /* Border and input */
+  --border: oklch(0.8699 0 0);
+  --input: oklch(0.8699 0 0);
+  --ring: oklch(0.57 0.37 145);
+
+  /* CulinarySeoul brand colors */
+  --culinary-emerald: oklch(0.57 0.37 145);
+  --culinary-purple: oklch(0.59 0.35 240);
+  --culinary-amber: oklch(0.73 0.22 85);
+
+  /* Dashboard colors */
+  --company-primary: oklch(0.55 0.37 273);
+  --brand-primary: oklch(0.58 0.34 158);
+  --store-primary: oklch(0.59 0.35 240);
+
+  /* Status colors */
+  --color-success: oklch(0.57 0.37 145);
+  --color-warning: oklch(0.73 0.22 85);
+  --color-error: oklch(0.63 0.27 27);
+  --color-info: oklch(0.59 0.35 240);
+
+  /* Chart colors */
+  --chart-1: oklch(0.57 0.37 145);
+  --chart-2: oklch(0.59 0.35 240);
+  --chart-3: oklch(0.73 0.22 85);
+  --chart-4: oklch(0.55 0.37 273);
+  --chart-5: oklch(0.58 0.34 158);
+
+  /* Sidebar colors */
+  --sidebar: oklch(0.9824 0.0013 286.3757);
+  --sidebar-foreground: oklch(0.3211 0 0);
+  --sidebar-primary: oklch(0.57 0.37 145);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.73 0.22 85);
+  --sidebar-accent-foreground: oklch(0.3211 0 0);
+  --sidebar-border: oklch(0.8699 0 0);
+  --sidebar-ring: oklch(0.57 0.37 145);
+
+  /* Layout values */
   --radius: 0.5rem;
-
-  /* ===== CulinarySeoul 브랜드 컬러 시스템 ===== */
-
-  /* CulinarySeoul 주요 색상 - Purple 기반 */
-  --color-culinary-purple-50: #faf5ff;
-  --color-culinary-purple-100: #f3e8ff;
-  --color-culinary-purple-200: #e9d5ff;
-  --color-culinary-purple-300: #d8b4fe;
-  --color-culinary-purple-400: #c084fc;
-  --color-culinary-purple-500: #a855f7;
-  --color-culinary-purple-600: #9333ea;
-  --color-culinary-purple-700: #7c3aed;
-  --color-culinary-purple-800: #6b21a8;
-  --color-culinary-purple-900: #581c87;
-
-  /* CulinarySeoul 보조 색상 - Indigo 기반 */
-  --color-culinary-indigo-50: #eef2ff;
-  --color-culinary-indigo-100: #e0e7ff;
-  --color-culinary-indigo-200: #c7d2fe;
-  --color-culinary-indigo-300: #a5b4fc;
-  --color-culinary-indigo-400: #818cf8;
-  --color-culinary-indigo-500: #6366f1;
-  --color-culinary-indigo-600: #4f46e5;
-  --color-culinary-indigo-700: #4338ca;
-  --color-culinary-indigo-800: #3730a3;
-  --color-culinary-indigo-900: #312e81;
-
-  /* 시맨틱 색상 */
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
-
-  /* ===== CulinarySeoul ERP 대시보드 테마 ===== */
-
-  /* Company Dashboard - 회사 관리 */
-  --color-company-primary: var(--color-culinary-purple-600);
-  --color-company-secondary: var(--color-culinary-purple-400);
-  --color-company-accent: var(--color-culinary-purple-100);
-
-  /* Brand Dashboard - 브랜드 관리 */
-  --color-brand-primary: var(--color-culinary-indigo-600);
-  --color-brand-secondary: var(--color-culinary-indigo-400);
-  --color-brand-accent: var(--color-culinary-indigo-100);
-
-  /* Store Dashboard - 매장 관리 */
-  --color-store-primary: #10b981;
-  --color-store-secondary: #34d399;
-  --color-store-accent: #d1fae5;
-
-  /* ===== 레이아웃 & 효과 ===== */
-
-  /* 그림자 */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-
-  /* 뉴모피즘 그림자 */
-  --shadow-neumorphic: 5px 5px 15px rgba(0, 0, 0, 0.1), -5px -5px 15px rgba(255, 255, 255, 0.9);
-  --shadow-neumorphic-hover: 2px 2px 5px rgba(0, 0, 0, 0.1), -2px -2px 5px rgba(255, 255, 255, 0.9);
-
-  /* 반경 */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.5rem;
-  --radius-full: 9999px;
-
-  /* 간격 */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
-  --spacing-3xl: 4rem;
-
-  /* 애니메이션 속도 */
-  --duration-instant: 50ms;
-  --duration-fast: 150ms;
-  --duration-normal: 300ms;
-  --duration-slow: 500ms;
-  --duration-slower: 700ms;
-
-  /* 타이포그래피 */
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-3xl: 1.875rem;
-  --font-size-4xl: 2.25rem;
-  --font-size-5xl: 3rem;
-
-  /* Z-index 레이어 */
-  --z-base: 0;
-  --z-dropdown: 10;
-  --z-sticky: 20;
-  --z-fixed: 30;
-  --z-modal-backdrop: 40;
-  --z-modal: 50;
-  --z-popover: 60;
-  --z-tooltip: 70;
 }
 
+/* Dark mode */
 .dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 84% 4.9%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 94.1%;
+  --background: oklch(0.2303 0.0125 264.2926);
+  --foreground: oklch(0.9219 0 0);
+  --card: oklch(0.321 0.0078 223.6661);
+  --card-foreground: oklch(0.9219 0 0);
+  --popover: oklch(0.321 0.0078 223.6661);
+  --popover-foreground: oklch(0.9219 0 0);
+  --primary: oklch(0.57 0.37 145);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.59 0.35 240);
+  --secondary-foreground: oklch(0.9219 0 0);
+  --muted: oklch(0.3867 0 0);
+  --muted-foreground: oklch(0.7155 0 0);
+  --accent: oklch(0.73 0.22 85);
+  --accent-foreground: oklch(0.9219 0 0);
+  --destructive: oklch(0.63 0.27 27);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.3867 0 0);
+  --input: oklch(0.3867 0 0);
+  --ring: oklch(0.57 0.37 145);
+
+  /* Dark mode chart colors */
+  --chart-1: oklch(0.67 0.25 145);
+  --chart-2: oklch(0.69 0.3 240);
+  --chart-3: oklch(0.83 0.17 85);
+  --chart-4: oklch(0.65 0.32 273);
+  --chart-5: oklch(0.68 0.28 158);
+
+  /* Dark mode sidebar */
+  --sidebar: oklch(0.2303 0.0125 264.2926);
+  --sidebar-foreground: oklch(0.9219 0 0);
+  --sidebar-primary: oklch(0.57 0.37 145);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.73 0.22 85);
+  --sidebar-accent-foreground: oklch(0.9219 0 0);
+  --sidebar-border: oklch(0.3867 0 0);
+  --sidebar-ring: oklch(0.57 0.37 145);
 }
 
-/* CulinarySeoul ERP 대시보드별 테마 적용 */
-[data-dashboard='company'] {
-  --primary: var(--color-company-primary);
-  --primary-foreground: 210 40% 98%;
+/* ===== Base Styles ===== */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Focus styles */
+  :focus-visible {
+    outline: none;
+    ring-width: 2px;
+    ring-color: var(--ring);
+    ring-offset-width: 2px;
+    ring-offset-color: var(--background);
+  }
 }
 
-[data-dashboard='brand'] {
-  --primary: var(--color-brand-primary);
-  --primary-foreground: 210 40% 98%;
+/* ===== Typography ===== */
+@layer base {
+  h1 {
+    scroll-margin: 5rem;
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 2.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    h1 {
+      font-size: 3rem;
+      line-height: 1;
+    }
+  }
+
+  h2 {
+    scroll-margin: 5rem;
+    font-size: 1.875rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 2.25rem;
+  }
+
+  h3 {
+    scroll-margin: 5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 2rem;
+  }
+
+  h4 {
+    scroll-margin: 5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.75rem;
+  }
+
+  p {
+    line-height: 1.75rem;
+  }
+
+  p:not(:first-child) {
+    margin-top: 1.5rem;
+  }
+
+  blockquote {
+    margin-top: 1.5rem;
+    border-left-width: 2px;
+    padding-left: 1.5rem;
+    font-style: italic;
+  }
+
+  code {
+    position: relative;
+    border-radius: 0.375rem;
+    background-color: var(--muted);
+    padding: 0.2rem 0.3rem;
+    font-family: monospace;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
 }
 
-[data-dashboard='store'] {
-  --primary: var(--color-store-primary);
-  --primary-foreground: 210 40% 98%;
-}
-
-/* Tailwind v3에서는 @theme inline이 지원되지 않으므로 제거됨 */
-
-/* 기본 스타일 리셋 */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* 포커스 스타일 */
-:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-/* 스크롤바 커스터마이징 */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: rgb(203 213 225 / 0.5);
-  border-radius: var(--radius-full);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(148 163 184 / 0.5);
-}
-
-/* 커스텀 유틸리티 클래스 */
+/* ===== Utility Classes ===== */
 @layer utilities {
-  /* 텍스트 그라데이션 */
-  .text-gradient-cash {
-    @apply bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent;
+  /* Container */
+  .container {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 80rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
-  .text-gradient-green {
-    @apply bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent;
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
   }
 
-  .text-gradient-blue {
-    @apply bg-gradient-to-r from-blue-500 to-sky-600 bg-clip-text text-transparent;
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
   }
 
-  /* 글래스모피즘 효과 */
-  .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-white/50;
+  /* Section spacing */
+  .section {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
   }
 
-  .glass-subtle {
-    @apply bg-white/50 backdrop-blur-sm border border-white/30;
+  @media (min-width: 640px) {
+    .section {
+      padding-top: 4rem;
+      padding-bottom: 4rem;
+    }
   }
 
-  /* 뉴모피즘 효과 */
-  .neumorphic {
-    box-shadow: var(--shadow-neumorphic);
+  @media (min-width: 1024px) {
+    .section {
+      padding-top: 5rem;
+      padding-bottom: 5rem;
+    }
   }
 
-  .neumorphic:hover {
-    box-shadow: var(--shadow-neumorphic-hover);
-  }
-
-  /* Bento Grid 카드 */
-  .bento-card {
-    @apply rounded-3xl bg-white shadow-xl border border-gray-100 overflow-hidden;
-  }
-
-  .bento-card-gradient {
-    @apply rounded-3xl shadow-xl overflow-hidden bg-gradient-to-br;
-  }
-
-  /* 카드 스타일 */
-  .card {
-    @apply rounded-2xl bg-white shadow-lg p-6 border border-gray-100;
-  }
-
-  .card-hover {
-    @apply transition-all duration-300 hover:shadow-xl hover:scale-105;
-  }
-
-  /* 버튼 호버 효과 */
-  .hover-lift {
-    @apply transition-transform duration-200 hover:-translate-y-0.5;
-  }
-
-  .hover-glow {
-    @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary-500/25;
-  }
-
-  /* 섹션 패딩 */
-  .section-padding {
-    @apply px-4 sm:px-6 lg:px-8;
-  }
-
-  .section-spacing {
-    @apply py-12 sm:py-16 lg:py-20;
-  }
-
-  /* 컨테이너 */
-  .container-max {
-    @apply max-w-7xl mx-auto;
-  }
-
-  /* 그리드 갭 */
+  /* Grid layouts */
   .grid-responsive {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.5rem;
   }
 
-  /* 애니메이션 지연 */
-  .animation-delay-200 {
-    animation-delay: 200ms;
+  @media (min-width: 640px) {
+    .grid-responsive {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
-  .animation-delay-400 {
-    animation-delay: 400ms;
+  @media (min-width: 1024px) {
+    .grid-responsive {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
   }
 
-  .animation-delay-600 {
-    animation-delay: 600ms;
+  /* Gradient backgrounds */
+  .gradient-primary {
+    background-image: linear-gradient(
+      to right,
+      var(--primary),
+      color-mix(in oklch, var(--primary) 80%, transparent)
+    );
   }
 
-  /* 그라디언트 배경 */
-  .bg-gradient-cash {
-    @apply bg-gradient-to-r from-green-500 to-blue-500;
+  .gradient-secondary {
+    background-image: linear-gradient(
+      to right,
+      var(--secondary),
+      color-mix(in oklch, var(--secondary) 80%, transparent)
+    );
   }
 
-  .bg-gradient-cash-light {
-    @apply bg-gradient-to-r from-green-50 to-blue-50;
+  .gradient-accent {
+    background-image: linear-gradient(
+      to right,
+      var(--accent),
+      color-mix(in oklch, var(--accent) 80%, transparent)
+    );
   }
 
-  .bg-gradient-creator {
-    @apply bg-gradient-to-r from-blue-500 to-sky-400;
+  /* Background patterns */
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, rgb(0 0 0 / 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(0 0 0 / 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
   }
 
-  .bg-gradient-business {
-    @apply bg-gradient-to-r from-emerald-500 to-teal-400;
+  .dark .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+  }
+}
+
+/* ===== Animations ===== */
+@layer utilities {
+  @keyframes pulse-slow {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
   }
 
-  .bg-gradient-admin {
-    @apply bg-gradient-to-r from-indigo-500 to-purple-400;
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.3s ease-out;
+  }
+}
+
+/* ===== Component-specific styles ===== */
+@layer components {
+  /* Card hover effects */
+  .card-hover {
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-hover:hover {
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-0.25rem);
+  }
+
+  /* Button variants */
+  .btn-gradient {
+    background-image: linear-gradient(
+      to right,
+      var(--primary),
+      color-mix(in oklch, var(--primary) 80%, transparent)
+    );
+    color: var(--primary-foreground);
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-gradient:hover {
+    background-image: linear-gradient(
+      to right,
+      color-mix(in oklch, var(--primary) 90%, transparent),
+      color-mix(in oklch, var(--primary) 70%, transparent)
+    );
+  }
+
+  /* Input focus styles */
+  .input-focus {
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .input-focus:focus {
+    border-color: var(--primary);
+    ring-width: 2px;
+    ring-color: color-mix(in oklch, var(--primary) 20%, transparent);
+  }
+}
+
+/* ===== Print styles ===== */
+@media print {
+  body {
+    background-color: white;
+    color: black;
+  }
+
+  .no-print {
+    display: none !important;
   }
 }

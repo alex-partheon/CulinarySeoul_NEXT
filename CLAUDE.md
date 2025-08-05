@@ -35,12 +35,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Next.js 15.4.x with App Router and React Server Components
 - React 18.2.0 + TypeScript 5.4.0
-- Tailwind CSS 3.4.0 for styling
-- Shadcn/ui 1.2.0 for UI components
+- Tailwind CSS 4.0.6 with OKLCH color system and CSS-first architecture
+- Shadcn/ui complete component library (28 components) with Radix UI primitives
 - React Hook Form 7.50.0 for form management
 - Zustand 4.5.0 for state management
 - @tanstack/react-query 5.38.0 for server state management
 - @tanstack/table-core 8.8.0 for data tables
+- Sonner 2.0.7 for toast notifications
+- next-themes 0.4.6 for theme management
+- Framer Motion 12.23.12 for animations
+- Custom theme system with unified CSS variables and components
 
 **Backend & Database:**
 
@@ -49,7 +53,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Authentication:**
 
-- Clerk for user authentication and role-based access control
+- Supabase Auth with custom AuthProvider for user authentication and session management
+- Custom role-based access control system
 
 **External APIs:**
 
@@ -65,16 +70,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Start development server with Turbopack
 npm run dev
 
+# Clean development start (removes .next cache)
+npm run dev:clean
+
+# Development with Webpack (fallback mode)
+npm run dev:webpack
+
+# Development with debugging enabled
+npm run dev:debug
+
 # Build for production
 npm run build
 
 # Start production server
 npm start
 
-# Run linting
+# Run linting (with auto-fix support)
 npm run lint
 
-# Type checking
+# Type checking only
 npm run type-check
 ```
 
@@ -95,6 +109,9 @@ npm run test:e2e
 
 # Run specific test file
 npm run test src/lib/__tests__/middleware-utils.test.ts
+
+# Test styling and themes
+# Visit http://localhost:3000/test-styles for comprehensive styling verification
 
 # Run Playwright tests with UI (useful for debugging)
 npx playwright test --ui
@@ -157,18 +174,25 @@ src/
 │   │       └── [...slug]/
 │   └── api/             # API routes for ERP backend
 ├── components/          # Reusable React components
-│   ├── ui/             # Base UI components (shadcn/ui)
+│   ├── ui/             # Base UI components (shadcn/ui + custom)
+│   ├── theme/          # Theme provider and theme-related components
 │   ├── dashboard/      # Dashboard-specific components
 │   │   ├── company/    # Company dashboard components
 │   │   ├── brand/      # Brand dashboard components
 │   │   ├── store/      # Store dashboard components
 │   │   └── shared/     # Shared dashboard components
 │   ├── inventory/      # Inventory management components
-│   └── forms/          # Form components
+│   ├── layout/         # Layout components (headers, sidebars, footers)
+│   ├── public/         # Public-facing components
+│   ├── forms/          # Form components
+│   └── auth/           # Authentication-related components
 ├── lib/                # Utilities and configurations
-│   ├── supabase/       # Supabase client setup
-│   ├── clerk/          # Clerk authentication utilities
+│   ├── supabase/       # Supabase client setup and auth provider
+│   ├── theme/          # Unified theme system and configuration
+│   ├── metadata.ts     # Server-side SEO metadata utilities
 │   ├── inventory/      # FIFO inventory engine
+│   ├── security.ts     # Security headers and middleware
+│   ├── monitoring.ts   # Application monitoring utilities
 │   └── __tests__/      # Unit tests
 ├── hooks/              # Custom React hooks
 ├── stores/             # Zustand state management
@@ -269,34 +293,36 @@ interface BrandSeparationReadiness {
 
 ## Authentication & Authorization
 
-### Clerk Integration
+### Supabase Auth Integration
 
 ```typescript
-// User metadata structure for role-based access
-interface UserMetadata {
-  roles: ('super_admin' | 'company_admin' | 'brand_admin' | 'store_manager')[];
-  company_id: string;
-  brand_ids?: string[];
-  store_ids?: string[];
-  primary_role: string; // Highest permission level
-}
+// Authentication context and provider structure
+<ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+  <AuthProvider>
+    {children}
+    <Toaster />
+  </AuthProvider>
+</ThemeProvider>
 ```
 
 ### Route Protection
 
 ```typescript
-// middleware.ts - Path-based permission checking
+// middleware.ts - Path-based permission checking with Supabase Auth
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Company dashboard access
   if (pathname.startsWith('/company')) {
     return requireRole(['super_admin', 'company_admin']);
   }
 
+  // Brand dashboard access
   if (pathname.startsWith('/brand')) {
     return requireRole(['super_admin', 'company_admin', 'brand_admin']);
   }
 
+  // Store dashboard access
   if (pathname.startsWith('/store')) {
     return requireRole(['super_admin', 'company_admin', 'brand_admin', 'store_manager']);
   }
@@ -385,6 +411,43 @@ CREATE TABLE inventory_lots (
 - **FIFO Tests**: Inventory calculation accuracy tests
 - **Coverage Target**: 90%+ for core business logic
 
+### Modern Styling Architecture
+
+**Tailwind CSS v4.0.6 Features:**
+
+- **CSS-first architecture** with @tailwindcss/postcss plugin for PostCSS integration
+- **OKLCH color system** for modern, perceptually uniform colors across all themes
+- **@theme inline configuration** for v4 compatibility without external config files
+- **Comprehensive dark mode support** with automatic theme switching and hydration-safe patterns
+
+**Unified Theme System:**
+
+```typescript
+// Theme configuration and components structure
+/src/lib/theme/config.ts        # Unified theme configuration with design tokens
+/src/components/theme/theme-wrapper.tsx  # Theme wrapper component
+/src/components/layout/PublicLayout.tsx  # Layout with theme integration
+```
+
+**Provider Structure:**
+
+```typescript
+// layout.tsx - Correct provider hierarchy
+<ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+  <AuthProvider>
+    {children}
+    <Toaster />
+  </AuthProvider>
+</ThemeProvider>
+```
+
+**Key Architecture Files:**
+
+- `src/app/globals.css` - Pure CSS with OKLCH color system, no @apply directives for v4 compatibility
+- `src/lib/metadata.ts` - Server-side SEO metadata utilities with Korean/English content
+- `src/components/login-form.tsx` - Shadcn login-01 component implementation
+- `postcss.config.mjs` - PostCSS configuration with @tailwindcss/postcss plugin
+
 ### Multi-Dashboard Development
 
 ```typescript
@@ -415,14 +478,6 @@ NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 
-# Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
-CLERK_SECRET_KEY="sk_test_..."
-NEXT_PUBLIC_CLERK_SIGN_IN_URL="/auth/signin"
-NEXT_PUBLIC_CLERK_SIGN_UP_URL="/auth/signup"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/company/dashboard"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/company/dashboard"
-
 # External APIs
 GOOGLE_GEMINI_API_KEY="your-gemini-api-key"
 TOSS_CLIENT_KEY="your-toss-client-key"
@@ -450,6 +505,7 @@ NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 - **Brand Dashboard**: http://localhost:3000/brand/[brandId]/dashboard
 - **Store Dashboard**: http://localhost:3000/store/[storeId]/dashboard
 - **Authentication**: http://localhost:3000/auth/signin
+- **Styling Test Page**: http://localhost:3000/test-styles (theme switching, toast testing, typography)
 - **Supabase Studio**: http://localhost:54323 (after `npm run supabase:start`)
 
 ## Current Project Status
@@ -457,31 +513,35 @@ NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 ### Development Phase
 
 - **Current Phase**: Phase 1 (Foundation & Dashboard Setup)
-- **Progress**: Foundation setup with Next.js 15 + Clerk + Supabase
-- **Recent Completed**: Project rebranding from CashUp to CulinarySeoul
+- **Progress**: Foundation setup with Next.js 15 + Supabase Auth + Complete UI System
+- **Recent Completed**: Tailwind CSS v4 migration with OKLCH color system and complete Shadcn/ui integration
 - **Next Priority**: Dashboard routing structure and permission system
 
 ### Completed Features
 
-1. **Basic Infrastructure**: Next.js 15.4.4 + TypeScript + Tailwind CSS v4 setup
-2. **Authentication**: Clerk integration for user management
-3. **Project Rebranding**: CashUp → CulinarySeoul ERP system conversion
-4. **Development Environment**: Jest + Playwright testing environment
+1. **Modern Infrastructure**: Next.js 15.4.x + TypeScript + Tailwind CSS v4.0.6 with OKLCH color system
+2. **Complete UI System**: 28 Shadcn/ui components, Sonner toast notifications, next-themes integration, unified theme system
+3. **Authentication System**: Supabase Auth integration with custom AuthProvider and login-01 component
+4. **Project Foundation**: CashUp → CulinarySeoul ERP system conversion with complete branding and main page rebuild
+5. **Development Environment**: Jest + Playwright testing environment with comprehensive test coverage
+6. **CSS Architecture**: Pure CSS-first approach with unified theme components and server-side metadata management
+7. **Modern Development Tools**: Multiple dev modes (clean, webpack, debug) with Turbopack optimization
 
 ### Next Implementation Priorities
 
 1. **Dashboard Routing**: Single domain path-based routing (/company, /brand, /store)
-2. **Permission System**: Clerk metadata-based hierarchical access control
+2. **Permission System**: Supabase Auth-based hierarchical access control
 3. **FIFO Inventory Engine**: Core inventory management with accurate cost tracking
-4. **Dashboard Layouts**: Three-tier dashboard system implementation
+4. **Dashboard Layouts**: Three-tier dashboard system implementation with unified theme system
 5. **Data Access Control**: Role-based data filtering and access control
+6. **Complete UI Pages**: Build remaining sections using established Shadcn/ui component patterns
 
 ## Project-Specific Conventions
 
 ### Database Conventions
 
 - All tables use `created_at` and `updated_at` timestamps
-- User references use Clerk user IDs
+- User references use Supabase Auth user UUIDs
 - RLS policies must be created for all tables based on user roles
 - Use SQL triggers for complex business logic (e.g., FIFO calculations)
 
