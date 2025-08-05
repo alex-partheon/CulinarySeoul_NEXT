@@ -6,9 +6,9 @@
  */
 
 import { createServerClient } from '@supabase/ssr'
-import { auth } from '@clerk/nextjs/server'
 import { cookies } from 'next/headers'
-import type { Database, ERPRole } from '@/types/database.types'
+import { redirect } from 'next/navigation'
+import type { Database, ERPRole, Profile } from '@/types/database.types'
 
 /**
  * 서버 컴포넌트용 Supabase 클라이언트
@@ -84,33 +84,101 @@ export function createServiceClient() {
 }
 
 /**
+ * 현재 인증된 사용자를 가져오는 헬퍼 함수
+ */
+export async function getCurrentUser() {
+  const supabase = await createClient()
+  
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
+
+  if (error) {
+    console.error('Error getting user:', error)
+    return null
+  }
+
+  return user
+}
+
+/**
+ * 현재 사용자의 프로필 정보를 가져오는 헬퍼 함수
+ */
+export async function getCurrentProfile(): Promise<Profile | null> {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    return null
+  }
+
+  const supabase = await createClient()
+  
+  // RLS 정책이 자동으로 권한 확인
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single()
+
+  if (error) {
+    console.error('Error fetching profile:', error)
+    return null
+  }
+
+  return profile
+}
+
+/**
  * 현재 사용자의 ERP 역할과 권한을 확인하는 헬퍼 함수
  */
 export async function getCurrentUserRole() {
-  const { userId } = await auth()
+  const profile = await getCurrentProfile()
   
-  if (!userId) {
+  if (!profile) {
     return null
   }
 
-  try {
-    const supabase = await createClient()
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('id, role, email, full_name')
-      .eq('id', userId)
-      .single()
-
-    if (error || !profile) {
-      console.error('Error fetching user profile:', error)
-      return null
-    }
-
-    return profile
-  } catch (error) {
-    console.error('Error in getCurrentUserRole:', error)
-    return null
+  return {
+    id: profile.id,
+    role: profile.role,
+    email: profile.email,
+    full_name: profile.full_name,
+    company_id: profile.company_id,
+    brand_id: profile.brand_id,
+    store_id: profile.store_id,
+    is_active: profile.is_active
   }
+}
+
+/**
+ * 인증이 필요한 페이지에서 사용하는 헬퍼 함수
+ */
+export async function requireAuth(redirectTo?: string) {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    const redirectUrl = redirectTo ? `?redirect_url=${encodeURIComponent(redirectTo)}` : ''
+    redirect(`/auth/signin${redirectUrl}`)
+  }
+
+  return user.id
+}
+
+/**
+ * 로그아웃 헬퍼 함수
+ */
+export async function signOut() {
+  const supabase = await createClient()
+  
+  const { error } = await supabase.auth.signOut()
+
+  if (error) {
+    console.error('Error signing out:', error)
+    throw error
+  }
+
+  redirect('/')
 }
 
 /**

@@ -103,7 +103,7 @@ export function HeroSection({ className }: HeroSectionProps) {
             size="lg"
             className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
           >
-            <Link href="/sign-in">
+            <Link href="/auth/signin">
               <span className="relative z-10 flex items-center">
                 대시보드 시작하기
                 <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />

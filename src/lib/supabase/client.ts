@@ -6,8 +6,7 @@
  */
 
 import { createBrowserClient } from '@supabase/ssr'
-import { useAuth } from '@clerk/nextjs'
-import type { Database } from '@/types/database.types'
+import type { Database, Profile } from '@/types/database.types'
 
 /**
  * 브라우저용 Supabase 클라이언트 (싱글톤)
@@ -35,8 +34,8 @@ export function createClient() {
 }
 
 /**
- * Clerk 인증과 통합된 Supabase 클라이언트 훅
- * RLS 정책이 올바르게 적용되도록 Clerk 사용자 ID 설정
+ * 브라우저용 Supabase 클라이언트 훅
+ * RLS 정책이 올바르게 적용되도록 인증된 세션 활용
  */
 export function useSupabaseClient() {
   const supabase = createClient()
@@ -47,7 +46,11 @@ export function useSupabaseClient() {
 /**
  * 현재 인증된 사용자의 프로필 정보를 가져오는 헬퍼 함수
  */
-export async function getCurrentUserProfile() {
+export async function getCurrentUserProfile(): Promise<{
+  user: any | null
+  profile: Profile | null
+  error: any
+}> {
   const supabase = createClient()
   
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -64,7 +67,7 @@ export async function getCurrentUserProfile() {
 
   return {
     user,
-    profile,
+    profile: profile as Profile | null,
     error: profileError
   }
 }

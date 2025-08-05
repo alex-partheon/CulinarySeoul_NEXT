@@ -1,13 +1,10 @@
-import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient } from '@/lib/supabase/server';
+import { authenticateApiRequest } from '@/lib/supabase/auth-api';
 import type { Database, ERPRole } from '@/types/database.types';
 
-// Supabase 클라이언트 (데이터베이스 전용)
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Supabase 서비스 클라이언트 (관리자 권한)
+const supabase = createServiceClient();
 
 type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
@@ -17,15 +14,15 @@ type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
  */
 export async function GET() {
   try {
-    // Clerk로 현재 사용자 확인
-    const { userId } = await auth();
+    // Supabase로 현재 사용자 확인
+    const { authenticated, user, profile, error } = await authenticateApiRequest();
 
-    if (!userId) {
+    if (!authenticated || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // 사용자 프로필 조회 (ERP 관련 정보 포함)
-    const { data: profile, error: profileError } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select(
         `
@@ -35,7 +32,7 @@ export async function GET() {
         store:store_id(id, name, code)
       `,
       )
-      .eq('id', userId)
+      .eq('id', user.id)
       .single();
 
     if (profileError) {
@@ -43,7 +40,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch profile' }, { status: 500 });
     }
 
-    return NextResponse.json({ profile });
+    return NextResponse.json({ profile: profileData });
   } catch (error) {
     console.error('Unexpected error in GET /api/profile:', error);
     return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
@@ -56,10 +53,10 @@ export async function GET() {
  */
 export async function PUT(request: NextRequest) {
   try {
-    // Clerk로 현재 사용자 확인
-    const { userId } = await auth();
+    // Supabase로 현재 사용자 확인
+    const { authenticated, user, error } = await authenticateApiRequest();
 
-    if (!userId) {
+    if (!authenticated || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -89,7 +86,7 @@ export async function PUT(request: NextRequest) {
     const { data: updatedProfile, error: updateError } = await supabase
       .from('profiles')
       .update(updateData)
-      .eq('id', userId)
+      .eq('id', user.id)
       .select()
       .single();
 
@@ -114,21 +111,14 @@ export async function PUT(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    // Clerk로 현재 사용자 확인
-    const { userId } = await auth();
+    // Supabase로 현재 사용자 확인 (관리자 권한 필요)
+    const { authenticated, user, profile, error } = await authenticateApiRequest(['super_admin', 'company_admin']);
 
-    if (!userId) {
+    if (!authenticated || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 관리자 권한 확인
-    const { data: currentProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single();
-
-    if (profileError || !['super_admin', 'company_admin'].includes(currentProfile?.role)) {
+    if (error === 'Insufficient permissions') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 

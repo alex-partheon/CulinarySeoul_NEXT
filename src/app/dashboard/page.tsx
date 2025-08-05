@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useAuth } from '@/lib/supabase/auth-provider';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { ERPRole } from '@/types/database.types';
@@ -16,65 +16,34 @@ interface Profile {
 }
 
 export default function Dashboard() {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
+  const { user, profile, loading, signOut, getDefaultDashboard, redirectToDashboard } = useAuth();
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!isLoaded) return;
-      
-      if (!user) {
-        router.push('/sign-in');
-        return;
-      }
+    if (loading) return;
+    
+    if (!user) {
+      router.push('/auth/signin');
+      return;
+    }
 
-      try {
-        // Supabase 클라이언트 생성 (RLS 정책 적용)
-        const supabase = createClient();
-        
-        // 프로필 정보 가져오기
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) {
-          setError('프로필 정보를 불러올 수 없습니다.');
+    // ERP 역할에 따라 적절한 대시보드로 리다이렉트
+    if (profile && profile.role) {
+      const userRole = profile.role as ERPRole;
+      if (isValidERPRole(userRole)) {
+        const dashboardPath = getDefaultDashboard();
+        if (dashboardPath !== '/auth/signin') {
+          router.push(dashboardPath);
           return;
         }
-
-        setProfile(profileData);
-
-        // ERP 역할에 따라 적절한 대시보드로 리다이렉트
-        const userRole = profileData.role as ERPRole;
-        if (isValidERPRole(userRole)) {
-          // TODO: 사용자의 브랜드/매장 관계 정보 조회 후 전달
-          const dashboardPath = getDefaultDashboardPath(userRole);
-          if (dashboardPath !== '/sign-in') {
-            router.push(dashboardPath);
-            return;
-          }
-        }
-
-      } catch (err) {
-        console.error('Dashboard data fetch error:', err);
-        setError('데이터를 불러오는 중 오류가 발생했습니다.');
-      } finally {
-        setLoading(false);
       }
-    };
-
-    fetchData();
-  }, [isLoaded, user, router]);
+    }
+  }, [loading, user, profile, router, getDefaultDashboard]);
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/');
+    // signOut already redirects to home page
   };
 
   const handleRoleSelection = async (selectedRole: ERPRole) => {
@@ -95,11 +64,8 @@ export default function Dashboard() {
         return;
       }
 
-      // ERP 역할에 따라 리다이렉트
-      const dashboardPath = getDefaultDashboardPath(selectedRole);
-      if (dashboardPath !== '/sign-in') {
-        router.push(dashboardPath);
-      }
+      // Use auth provider's redirect function
+      redirectToDashboard();
     } catch (err) {
       console.error('Role update error:', err);
       setError('역할 업데이트 중 오류가 발생했습니다.');
@@ -123,7 +89,7 @@ export default function Dashboard() {
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <button
-            onClick={() => router.push('/sign-in')}
+            onClick={() => router.push('/auth/signin')}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             로그인 페이지로

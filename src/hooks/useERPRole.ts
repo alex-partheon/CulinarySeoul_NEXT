@@ -1,26 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/database.types';
-import type { ERPRole } from '@/constants/navigation';
-
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-interface Profile {
-  id: string;
-  email: string;
-  full_name: string | null;
-  role: ERPRole;
-  created_at: string | null;
-}
+import { useProfile } from '@/lib/supabase/auth-provider';
+import type { ERPRole } from '@/types/database.types';
 
 interface UseERPRoleResult {
-  profile: Profile | null;
+  profile: any;
   role: ERPRole | null;
   loading: boolean;
   error: string | null;
@@ -31,43 +15,7 @@ interface UseERPRoleResult {
 }
 
 export function useERPRole(): UseERPRoleResult {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { user, isLoaded } = useUser();
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!isLoaded) return;
-      
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) {
-          setError('프로필 정보를 불러올 수 없습니다.');
-          return;
-        }
-
-        setProfile(profileData);
-      } catch (err) {
-        console.error('Profile fetch error:', err);
-        setError('프로필 정보를 불러오는 중 오류가 발생했습니다.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [isLoaded, user]);
+  const { profile, loading } = useProfile();
 
   const hasRole = (requiredRoles: ERPRole[]): boolean => {
     if (!profile?.role) return false;
@@ -90,7 +38,7 @@ export function useERPRole(): UseERPRoleResult {
     profile,
     role: profile?.role || null,
     loading,
-    error,
+    error: null, // Error handling is now managed by AuthProvider
     hasRole,
     isCompanyLevel,
     isBrandLevel,

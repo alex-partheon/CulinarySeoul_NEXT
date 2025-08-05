@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/lib/supabase/auth-provider';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { DashboardLayout } from '@/components/layout';
@@ -56,11 +56,11 @@ interface Document {
 
 export default function CompanyDashboard() {
   const [stats, setStats] = useState<CompanyStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('3months');
   const router = useRouter();
-  const { user, isLoaded } = useUser();
+  const { user, profile, loading } = useAuth();
 
   // 차트 데이터 생성 (임시)
   const generateChartData = (): ChartData[] => {
@@ -118,10 +118,10 @@ export default function CompanyDashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!isLoaded) return;
+      if (loading) return;
       
       if (!user) {
-        router.push('/sign-in');
+        router.push('/auth/signin');
         return;
       }
 
@@ -129,19 +129,13 @@ export default function CompanyDashboard() {
         // Supabase 클라이언트 생성 (RLS 정책 적용)
         const supabase = createClient();
         
-        // 사용자 역할 확인
-        const { data: currentUser, error: userError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-
-        if (userError || !currentUser) {
+        // 프로필에서 사용자 역할 확인
+        if (!profile) {
           setError('사용자 정보를 확인할 수 없습니다.');
           return;
         }
 
-        const userRole = currentUser.role as ERPRole;
+        const userRole = profile.role as ERPRole;
         
         // 회사 관리자 및 슬퍼 관리자만 접근 가능
         if (!['super_admin', 'company_admin'].includes(userRole)) {
@@ -179,14 +173,14 @@ export default function CompanyDashboard() {
         console.error('Dashboard data fetch error:', err);
         setError('데이터를 불러오는 중 오류가 발생했습니다.');
       } finally {
-        setLoading(false);
+        setDataLoading(false);
       }
     };
 
     fetchData();
-  }, [isLoaded, user, router]);
+  }, [loading, user, profile, router]);
 
-  if (loading) {
+  if (loading || dataLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

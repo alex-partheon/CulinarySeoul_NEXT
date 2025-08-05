@@ -3,17 +3,9 @@
  * 사용자의 역할에 따라 UI 요소 표시/숨김 제어
  */
 
-import { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/lib/supabase/auth-provider';
 import type { ERPRole } from '@/types/database.types';
 
-interface UserProfile {
-  id: string;
-  role: ERPRole;
-  email: string;
-  full_name: string | null;
-}
 
 interface Permission {
   // 회사 레벨 권한
@@ -43,62 +35,18 @@ interface Permission {
 }
 
 /**
- * 사용자 권한 확인 훅
+ * 사용자 권한 확인 훅 (Enhanced with Supabase Auth)
  */
 export function usePermissions() {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [permissions, setPermissions] = useState<Permission | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { profile, loading } = useAuth();
   
-  const { user, isLoaded } = useUser();
-
-  useEffect(() => {
-    const fetchUserPermissions = async () => {
-      if (!isLoaded) return;
-      
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const supabase = createClient();
-        
-        // 사용자 프로필 조회
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, role, email, full_name')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError || !profileData) {
-          setError('사용자 프로필을 불러올 수 없습니다.');
-          return;
-        }
-
-        setProfile(profileData as UserProfile);
-        
-        // 역할에 따른 권한 계산
-        const userPermissions = calculatePermissions(profileData.role as ERPRole);
-        setPermissions(userPermissions);
-        
-      } catch (err) {
-        console.error('Permission fetch error:', err);
-        setError('권한 정보를 불러오는 중 오류가 발생했습니다.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserPermissions();
-  }, [isLoaded, user]);
+  const permissions = profile?.role ? calculatePermissions(profile.role) : null;
 
   return {
     profile,
     permissions,
     loading,
-    error,
+    error: null, // Error handling managed by AuthProvider
   };
 }
 
@@ -247,7 +195,7 @@ export function useDefaultDashboard() {
   const { profile } = usePermissions();
   
   if (!profile) {
-    return '/sign-in';
+    return '/auth/signin';
   }
   
   switch (profile.role) {

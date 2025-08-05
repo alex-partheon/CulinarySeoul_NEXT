@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useClerk } from '@clerk/nextjs';
+import { useAuth } from '@/lib/supabase/auth-provider';
 import { 
   Menu,
   Crown,
@@ -33,7 +33,7 @@ export function DashboardHeader({
   className 
 }: DashboardHeaderProps) {
   const router = useRouter();
-  const { signOut } = useClerk();
+  const { signOut } = useAuth();
 
   return (
     <header className={cn('bg-white border-b', className)}>

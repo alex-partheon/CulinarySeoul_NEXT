@@ -66,7 +66,7 @@ export function DashboardLayout({
         <div className="text-center">
           <p className="text-red-600 mb-4">{error || '인증이 필요합니다.'}</p>
           <button
-            onClick={() => router.push('/sign-in')}
+            onClick={() => router.push('/auth/signin')}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
           >
             로그인 페이지로

@@ -430,7 +430,7 @@ async function createAllTestAccounts() {
 
     console.log('\n🔗 접속 정보:');
     console.log('- 개발 서버: http://localhost:3000');
-    console.log('- 로그인 페이지: http://localhost:3000/sign-in');
+    console.log('- 로그인 페이지: http://localhost:3000/auth/signin');
     console.log('\n📚 다음 단계:');
     console.log('1. npm run test:accounts:verify - 계정 검증');
     console.log('2. npm run dev - 개발 서버 시작');

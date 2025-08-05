@@ -48,10 +48,10 @@ export function PublicHeader({ className }: PublicHeaderProps) {
           {/* 인증 버튼 (데스크톱) */}
           <div className="hidden md:flex items-center space-x-4">
             <Button variant="ghost" asChild>
-              <Link href="/sign-in">로그인</Link>
+              <Link href="/auth/signin">로그인</Link>
             </Button>
             <Button asChild>
-              <Link href="/sign-up">회원가입</Link>
+              <Link href="/auth/signup">회원가입</Link>
             </Button>
           </div>
 
@@ -86,12 +86,12 @@ export function PublicHeader({ className }: PublicHeaderProps) {
                   </nav>
                   <div className="border-t pt-6 space-y-3">
                     <Button variant="ghost" className="w-full justify-start" asChild>
-                      <Link href="/sign-in" onClick={() => setIsMenuOpen(false)}>
+                      <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)}>
                         로그인
                       </Link>
                     </Button>
                     <Button className="w-full" asChild>
-                      <Link href="/sign-up" onClick={() => setIsMenuOpen(false)}>
+                      <Link href="/auth/signup" onClick={() => setIsMenuOpen(false)}>
                         회원가입
                       </Link>
                     </Button>

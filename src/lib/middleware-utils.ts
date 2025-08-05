@@ -292,9 +292,7 @@ export function isPublicPath(pathname: string): boolean {
   // 패턴 기반 공개 경로
   const publicPatterns = [
     '/auth/',
-    '/api/webhooks/',
-    '/sign-in',
-    '/sign-up'
+    '/api/webhooks/'
   ] as const;
   
   return publicPatterns.some(pattern => pathname.startsWith(pattern));
@@ -386,6 +384,6 @@ export function getDefaultDashboardPath(
       
     default:
       // 알 수 없는 역할은 로그인 페이지로
-      return '/sign-in';
+      return '/auth/signin';
   }
 }

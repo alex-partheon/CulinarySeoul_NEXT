@@ -1,13 +1,10 @@
-import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { authenticateApiRequest } from '@/lib/supabase/auth-api';
+import { createServiceClient } from '@/lib/supabase/server';
 import type { Database } from '@/types/database.types';
 
-// Supabase 클라이언트 (데이터베이스 전용)
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Supabase 서비스 클라이언트 (관리자 권한)
+const supabase = createServiceClient();
 
 /**
  * ERP 시스템 - 추천 링크 불필요
@@ -15,10 +12,10 @@ const supabase = createClient<Database>(
  */
 export async function GET(request: NextRequest) {
   try {
-    // Clerk로 현재 사용자 확인
-    const { userId } = await auth();
+    // Supabase로 현재 사용자 확인
+    const { authenticated, user, error } = await authenticateApiRequest();
 
-    if (!userId) {
+    if (!authenticated || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

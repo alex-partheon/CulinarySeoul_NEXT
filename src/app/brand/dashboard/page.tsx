@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/lib/supabase/auth-provider';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { DashboardLayout } from '@/components/layout';
@@ -25,14 +25,19 @@ export default function BrandDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
-  const { user, isLoaded } = useUser();
+  const { user, profile, loading: authLoading } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!isLoaded) return;
+      if (authLoading) return;
       
       if (!user) {
-        router.push('/sign-in');
+        router.push('/auth/signin');
+        return;
+      }
+
+      if (!profile) {
+        setError('사용자 정보를 확인할 수 없습니다.');
         return;
       }
 
@@ -40,19 +45,7 @@ export default function BrandDashboard() {
         // Supabase 클라이언트 생성 (RLS 정책 적용)
         const supabase = createClient();
         
-        // 사용자 역할 확인
-        const { data: currentUser, error: userError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-
-        if (userError || !currentUser) {
-          setError('사용자 정보를 확인할 수 없습니다.');
-          return;
-        }
-
-        const userRole = currentUser.role as ERPRole;
+        const userRole = profile.role as ERPRole;
         
         // 브랜드 관리 권한 확인
         if (!['super_admin', 'company_admin', 'brand_admin', 'brand_staff'].includes(userRole)) {
@@ -94,7 +87,7 @@ export default function BrandDashboard() {
     };
 
     fetchData();
-  }, [isLoaded, user, router]);
+  }, [authLoading, user, profile, router]);
 
   if (loading) {
     return (
