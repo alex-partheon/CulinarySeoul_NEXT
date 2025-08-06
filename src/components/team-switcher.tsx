@@ -24,9 +24,44 @@ interface Team {
   url?: string;
 }
 
-export function TeamSwitcher({ teams: initialTeams }: { teams?: Team[] }) {
-  const { user, profile: _profile } = useAuth();
-  const [teams, setTeams] = React.useState<Team[]>(initialTeams || []);
+// TeamSwitcher Context
+interface TeamSwitcherContextType {
+  selectedTeam: string | null;
+  setSelectedTeam: (team: string) => void;
+  teams: Team[];
+  setTeams: (teams: Team[]) => void;
+}
+
+const TeamSwitcherContext = React.createContext<TeamSwitcherContextType | undefined>(undefined);
+
+export function useTeamSwitcher() {
+  const context = React.useContext(TeamSwitcherContext);
+  if (context === undefined) {
+    throw new Error('useTeamSwitcher must be used within a TeamSwitcherProvider');
+  }
+  return context;
+}
+
+export function TeamSwitcherProvider({ children }: { children: React.ReactNode }) {
+  const [selectedTeam, setSelectedTeam] = React.useState<string>('전체');
+  const [teams, setTeams] = React.useState<Team[]>([]);
+
+  const value = React.useMemo(
+    () => ({
+      selectedTeam,
+      setSelectedTeam,
+      teams,
+      setTeams,
+    }),
+    [selectedTeam, teams],
+  );
+
+  return <TeamSwitcherContext.Provider value={value}>{children}</TeamSwitcherContext.Provider>;
+}
+
+export function TeamSwitcher({ teams: _initialTeams }: { teams?: Team[] }) {
+  const { user } = useAuth();
+  const { setSelectedTeam, teams, setTeams } = useTeamSwitcher();
   const [activeTeam, setActiveTeam] = React.useState<Team | null>(null);
   const [loading, setLoading] = React.useState(true);
   const supabase = createClient();
@@ -47,11 +82,10 @@ export function TeamSwitcher({ teams: initialTeams }: { teams?: Team[] }) {
             `
             id,
             name,
-            brand_settings,
-            status
+            is_active
           `,
           )
-          .eq('status', 'active')
+          .eq('is_active', true)
           .order('name');
 
         if (error) {
@@ -86,6 +120,7 @@ export function TeamSwitcher({ teams: initialTeams }: { teams?: Team[] }) {
 
         setTeams(teamList);
         setActiveTeam(teamList[0]); // 기본값은 "전체"
+        setSelectedTeam(teamList[0].name); // context에도 설정
       } catch (error) {
         console.error('브랜드 데이터 가져오기 실패:', error);
       } finally {
@@ -149,10 +184,9 @@ export function TeamSwitcher({ teams: initialTeams }: { teams?: Team[] }) {
                 key={team.id || team.name}
                 onClick={() => {
                   setActiveTeam(team);
-                  // 브랜드 전환 시 해당 대시보드로 이동
-                  if (team.url) {
-                    window.location.href = team.url;
-                  }
+                  setSelectedTeam(team.name); // context 업데이트
+                  // 회사 대시보드에서는 페이지 이동하지 않고 사이드바만 변경
+                  // 브랜드 대시보드로 이동하려면 사이드바의 "브랜드 대시보드" 메뉴 사용
                 }}
                 className="gap-2 p-2"
               >

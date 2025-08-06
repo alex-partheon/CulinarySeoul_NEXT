@@ -20,20 +20,27 @@ import {
 
 import { NavMain } from '@/components/nav-main';
 import { NavSecondary } from '@/components/nav-secondary';
-import { TeamSwitcher } from '@/components/team-switcher';
+import { TeamSwitcher, useTeamSwitcher } from '@/components/team-switcher';
 import { NavUser } from '@/components/nav-user-custom';
+import { NavFavoritesBrands } from '@/components/nav-favorites-brands';
+import { NavFavoritesStores } from '@/components/nav-favorites-stores';
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/lib/supabase/auth-provider';
 import { useMemo } from 'react';
+import { Plus } from 'lucide-react';
 
 export function AppSidebarCompanyNew({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, profile, hasMinimumRole } = useAuth();
+  const { selectedTeam } = useTeamSwitcher();
 
   // TeamSwitcher가 자체적으로 브랜드 데이터를 가져오므로 제거
 
@@ -46,15 +53,6 @@ export function AppSidebarCompanyNew({ ...props }: React.ComponentProps<typeof S
         icon: Home,
       },
     ];
-
-    // 브랜드 관리 권한 확인 (회사 관리자 또는 브랜드 직원 이상)
-    if (hasMinimumRole('brand_staff')) {
-      baseNavMain.push({
-        title: '브랜드 관리',
-        url: '/company/brands',
-        icon: Building2,
-      });
-    }
 
     // 매장 관리 (별도 메뉴)
     if (hasMinimumRole('brand_staff')) {
@@ -71,20 +69,21 @@ export function AppSidebarCompanyNew({ ...props }: React.ComponentProps<typeof S
         title: '재무 관리',
         url: '/company/finance',
         icon: DollarSign,
-        items: [
-          {
-            title: '매출 현황',
-            url: '/company/finance/revenue',
-          },
-          {
-            title: '비용 분석',
-            url: '/company/finance/expenses',
-          },
-          {
-            title: '수익성 분석',
-            url: '/company/finance/profitability',
-          },
-        ],
+      });
+      baseNavMain.push({
+        title: '매출 현황',
+        url: '/company/finance/revenue',
+        icon: DollarSign,
+      });
+      baseNavMain.push({
+        title: '비용 분석',
+        url: '/company/finance/expenses',
+        icon: DollarSign,
+      });
+      baseNavMain.push({
+        title: '수익성 분석',
+        url: '/company/finance/profitability',
+        icon: DollarSign,
       });
     }
 
@@ -110,6 +109,15 @@ export function AppSidebarCompanyNew({ ...props }: React.ComponentProps<typeof S
   // Nav Secondary 메뉴 (요청된 특정 페이지들)
   const navSecondary = useMemo(() => {
     const baseNavSecondary = [];
+
+    // 브랜드 관리 권한 확인 (회사 관리자 또는 브랜드 직원 이상)
+    if (hasMinimumRole('brand_staff')) {
+      baseNavSecondary.push({
+        title: '브랜드 관리',
+        url: '/company/brands',
+        icon: Building2,
+      });
+    }
 
     // 보안 설정은 회사 관리자만 접근 가능
     if (hasMinimumRole('company_admin')) {
@@ -200,9 +208,27 @@ export function AppSidebarCompanyNew({ ...props }: React.ComponentProps<typeof S
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />
+        <NavFavoritesBrands />
+        <NavFavoritesStores />
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
+        {/* NEW 브랜드/매장 버튼 */}
+        <SidebarMenu>
+          <SidebarMenuItem>
+            {selectedTeam === '전체' ? (
+              <SidebarMenuButton className="w-full justify-start gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                <Plus className="size-4" />
+                <span>NEW 브랜드</span>
+              </SidebarMenuButton>
+            ) : selectedTeam && selectedTeam !== '전체' ? (
+              <SidebarMenuButton className="w-full justify-start gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                <Plus className="size-4" />
+                <span>NEW 매장</span>
+              </SidebarMenuButton>
+            ) : null}
+          </SidebarMenuItem>
+        </SidebarMenu>
         <NavUser user={userData} />
       </SidebarFooter>
       <SidebarRail />
