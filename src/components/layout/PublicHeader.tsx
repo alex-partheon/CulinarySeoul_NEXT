@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, ChefHat } from 'lucide-react';
+import { Menu, ChefHat, LogOut, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '@/lib/supabase/auth-provider';
 
 interface PublicHeaderProps {
   className?: string;
@@ -12,11 +13,19 @@ interface PublicHeaderProps {
 
 export function PublicHeader({ className }: PublicHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut, getDefaultDashboard, loading } = useAuth();
 
   const navigation = [
     { name: '홈', href: '/' },
     { name: '소개', href: '/about' },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsMenuOpen(false);
+  };
+
+  const dashboardUrl = getDefaultDashboard();
 
   return (
     <header className={`bg-white border-b border-gray-200 sticky top-0 z-50 ${className || ''}`}>
@@ -47,12 +56,26 @@ export function PublicHeader({ className }: PublicHeaderProps) {
 
           {/* 인증 버튼 (데스크톱) */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" asChild>
-              <Link href="/auth/signin">로그인</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/auth/signup">회원가입</Link>
-            </Button>
+            {loading ? (
+              <div className="w-20 h-9 bg-gray-200 animate-pulse rounded" />
+            ) : user ? (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href={dashboardUrl} className="flex items-center space-x-2">
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span>대시보드</span>
+                  </Link>
+                </Button>
+                <Button variant="outline" onClick={handleSignOut} className="flex items-center space-x-2">
+                  <LogOut className="h-4 w-4" />
+                  <span>로그아웃</span>
+                </Button>
+              </>
+            ) : (
+              <Button asChild>
+                <Link href="/auth/signin">로그인</Link>
+              </Button>
+            )}
           </div>
 
           {/* 모바일 메뉴 버튼 */}
@@ -85,16 +108,28 @@ export function PublicHeader({ className }: PublicHeaderProps) {
                     ))}
                   </nav>
                   <div className="border-t pt-6 space-y-3">
-                    <Button variant="ghost" className="w-full justify-start" asChild>
-                      <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)}>
-                        로그인
-                      </Link>
-                    </Button>
-                    <Button className="w-full" asChild>
-                      <Link href="/auth/signup" onClick={() => setIsMenuOpen(false)}>
-                        회원가입
-                      </Link>
-                    </Button>
+                    {loading ? (
+                      <div className="w-full h-9 bg-gray-200 animate-pulse rounded" />
+                    ) : user ? (
+                      <>
+                        <Button variant="ghost" className="w-full justify-start" asChild>
+                          <Link href={dashboardUrl} onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-2">
+                            <LayoutDashboard className="h-4 w-4" />
+                            <span>대시보드</span>
+                          </Link>
+                        </Button>
+                        <Button variant="outline" className="w-full justify-start" onClick={handleSignOut}>
+                          <LogOut className="h-4 w-4 mr-2" />
+                          로그아웃
+                        </Button>
+                      </>
+                    ) : (
+                      <Button className="w-full" asChild>
+                        <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)}>
+                          로그인
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </SheetContent>

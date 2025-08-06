@@ -8,6 +8,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { Database, ERPRole } from '@/types/database.types'
+import type { User, AuthError } from '@supabase/supabase-js'
 import { 
   addSecurityHeaders, 
   checkRateLimit, 
@@ -135,7 +136,7 @@ function createSupabaseClient(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(_cookiesToSet) {
           // Store cookies to set them in response later
         },
       },
@@ -205,13 +206,13 @@ async function getAuthResult(request: NextRequest): Promise<AuthResult> {
 
     const supabase = createSupabaseClient(request)
     
-    const { data: { session }, error } = await supabase.auth.getSession()
+    const { data: { user }, error } = await supabase.auth.getUser()
     
-    if (error || !session?.user) {
+    if (error || !user) {
       const result = { isAuthenticated: false }
       
       if (error) {
-        logAuthFailure(request, 'session_error', { error: error.message })
+        logAuthFailure(request, 'user_error', { error: error.message })
       }
       
       return result
@@ -219,23 +220,23 @@ async function getAuthResult(request: NextRequest): Promise<AuthResult> {
 
     // Extract claims from JWT token
     const claims: UserClaims = {
-      role: session.user.user_metadata?.role || 
-             session.user.app_metadata?.role ||
+      role: user.user_metadata?.role || 
+             user.app_metadata?.role ||
              undefined,
-      company_id: session.user.user_metadata?.company_id ||
-                  session.user.app_metadata?.company_id ||
+      company_id: user.user_metadata?.company_id ||
+                  user.app_metadata?.company_id ||
                   undefined,
-      brand_id: session.user.user_metadata?.brand_id ||
-                session.user.app_metadata?.brand_id ||
+      brand_id: user.user_metadata?.brand_id ||
+                user.app_metadata?.brand_id ||
                 undefined,
-      store_id: session.user.user_metadata?.store_id ||
-                session.user.app_metadata?.store_id ||
+      store_id: user.user_metadata?.store_id ||
+                user.app_metadata?.store_id ||
                 undefined,
-      role_level: session.user.user_metadata?.role_level ||
-                  session.user.app_metadata?.role_level ||
+      role_level: user.user_metadata?.role_level ||
+                  user.app_metadata?.role_level ||
                   undefined,
-      permissions: session.user.user_metadata?.permissions ||
-                   session.user.app_metadata?.permissions ||
+      permissions: user.user_metadata?.permissions ||
+                   user.app_metadata?.permissions ||
                    undefined
     }
 
@@ -244,13 +245,13 @@ async function getAuthResult(request: NextRequest): Promise<AuthResult> {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, company_id, brand_id, store_id, additional_permissions, is_active')
-        .eq('id', session.user.id)
+        .eq('id', user.id)
         .single()
 
       if (profile) {
         // Check if account is active
         if (!profile.is_active) {
-          logAuthFailure(request, 'account_disabled', { userId: session.user.id })
+          logAuthFailure(request, 'account_disabled', { userId: user.id })
           return { isAuthenticated: false }
         }
 
@@ -265,7 +266,7 @@ async function getAuthResult(request: NextRequest): Promise<AuthResult> {
 
     const result: AuthResult = {
       isAuthenticated: true,
-      user: session.user,
+      user: user,
       claims,
       profile: claims
     }
@@ -299,8 +300,8 @@ async function getAuthResult(request: NextRequest): Promise<AuthResult> {
 // =============================================
 
 export async function createAuthMiddleware(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
   const pathname = request.nextUrl.pathname
-  const ip = request.ip || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   
   // Skip middleware for static files and API routes
   if (
@@ -544,16 +545,16 @@ export async function getServerUser(request?: NextRequest): Promise<AuthResult> 
           getAll() {
             return cookieStore.getAll()
           },
-          setAll() {
+          setAll(_cookiesToSet) {
             // Server components can't set cookies
           },
         },
       }
     )
 
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { user }, error } = await supabase.auth.getUser()
     
-    if (!session?.user) {
+    if (error || !user) {
       return { isAuthenticated: false }
     }
 
@@ -561,7 +562,7 @@ export async function getServerUser(request?: NextRequest): Promise<AuthResult> 
     const { data: profile } = await supabase
       .from('profiles')
       .select('role, company_id, brand_id, store_id, additional_permissions')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
 
     const claims: UserClaims = profile ? {
@@ -575,7 +576,7 @@ export async function getServerUser(request?: NextRequest): Promise<AuthResult> 
 
     return {
       isAuthenticated: true,
-      user: session.user,
+      user: user,
       claims,
       profile
     }

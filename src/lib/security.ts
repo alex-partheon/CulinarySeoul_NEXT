@@ -51,17 +51,17 @@ interface RateLimitConfig {
 const RATE_LIMITS: Record<string, RateLimitConfig> = {
   auth: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 10, // 10 auth attempts per 15 minutes
+    maxRequests: process.env.NODE_ENV === 'development' ? 100 : 10, // 개발환경에서는 100회, 프로덕션에서는 10회
     skipSuccessfulRequests: true,
   },
   api: {
     windowMs: 1 * 60 * 1000, // 1 minute
-    maxRequests: 100, // 100 API calls per minute
+    maxRequests: process.env.NODE_ENV === 'development' ? 1000 : 100, // 개발환경에서는 1000회, 프로덕션에서는 100회
     skipSuccessfulRequests: false,
   },
   global: {
     windowMs: 1 * 60 * 1000, // 1 minute
-    maxRequests: 300, // 300 requests per minute
+    maxRequests: process.env.NODE_ENV === 'development' ? 3000 : 300, // 개발환경에서는 3000회, 프로덕션에서는 300회
     skipSuccessfulRequests: false,
   },
 };
@@ -98,13 +98,17 @@ export function rateLimit(
   };
 }
 
-export function getRateLimitKey(request: NextRequest, type: 'auth' | 'api' | 'global'): string {
-  const ip =
-    request.ip ||
+function getClientIP(request: NextRequest): string {
+  return (
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     request.headers.get('x-real-ip') ||
-    'unknown';
+    request.headers.get('cf-connecting-ip') ||
+    'unknown'
+  );
+}
 
+export function getRateLimitKey(request: NextRequest, type: 'auth' | 'api' | 'global'): string {
+  const ip = getClientIP(request);
   return `${type}:${ip}`;
 }
 
@@ -281,7 +285,7 @@ export function detectSuspiciousActivity(request: NextRequest): boolean {
   if (suspiciousBots.some((bot) => userAgent.toLowerCase().includes(bot))) {
     logSecurityEvent({
       type: 'suspicious_activity',
-      ip: request.ip || 'unknown',
+      ip: getClientIP(request),
       userAgent,
       path,
       details: { reason: 'bot_detected' },
@@ -302,7 +306,7 @@ export function detectSuspiciousActivity(request: NextRequest): boolean {
   if (suspiciousPaths.some((suspPath) => path.includes(suspPath))) {
     logSecurityEvent({
       type: 'suspicious_activity',
-      ip: request.ip || 'unknown',
+      ip: getClientIP(request),
       userAgent,
       path,
       details: { reason: 'suspicious_path' },
@@ -324,7 +328,7 @@ export function logAuthFailure(
 ) {
   logSecurityEvent({
     type: 'auth_failure',
-    ip: request.ip || 'unknown',
+    ip: getClientIP(request),
     userAgent: request.headers.get('user-agent') || 'unknown',
     path: request.nextUrl.pathname,
     details: { reason, ...details },

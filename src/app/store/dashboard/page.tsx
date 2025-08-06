@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/supabase/auth-provider';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { DashboardLayout } from '@/components/layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { StoreManagerUp, BrandAdminUp, AccessDenied } from '@/components/ui/protected-component';
+import { BrandAdminUp, AccessDenied } from '@/components/ui/protected-component';
 import { ErrorBoundary, InlineError } from '@/components/ui/error-boundary';
+import { AppSidebarCompany } from '@/components/dashboard/app-sidebar-company';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { SiteHeaderCompany } from '@/components/dashboard/site-header-company';
 import {
   Store,
   MapPin,
@@ -104,7 +106,7 @@ export default function StoreDashboard() {
   }, [authLoading, user, profile, router]);
 
   // 주소 포맷팅 함수
-  const formatAddress = (address: any): string => {
+  const formatAddress = (address: string | object | null): string => {
     if (!address) return '주소 없음';
     
     if (typeof address === 'string') return address;
@@ -134,20 +136,36 @@ export default function StoreDashboard() {
 
   if (error) {
     return (
-      <DashboardLayout title="매장 관리">
-        <InlineError 
-          message={error} 
-          onRetry={() => window.location.reload()}
-        />
-      </DashboardLayout>
+      <SidebarProvider>
+        <div className="flex h-screen w-full overflow-hidden">
+          <AppSidebarCompany />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <SiteHeaderCompany />
+            <main className="flex-1 overflow-y-auto bg-gradient-to-br from-green-50 via-white to-green-50">
+              <div className="p-6 lg:p-8">
+                <InlineError 
+                  message={error} 
+                  onRetry={() => window.location.reload()}
+                />
+              </div>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 
   return (
     <ErrorBoundary>
-      <DashboardLayout title="매장 관리">
-        <BrandAdminUp fallback={<AccessDenied message="매장 대시보드에 접근할 권한이 없습니다." />}>
-          <div className="space-y-6">
+      <SidebarProvider>
+        <div className="flex h-screen w-full overflow-hidden">
+          <AppSidebarCompany />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <SiteHeaderCompany />
+            <main className="flex-1 overflow-y-auto bg-gradient-to-br from-green-50 via-white to-green-50">
+              <div className="p-6 lg:p-8">
+                <BrandAdminUp fallback={<AccessDenied message="매장 대시보드에 접근할 권한이 없습니다." />}>
+                  <div className="space-y-6">
         {/* 헤더 섹션 */}
         <div className="flex items-center justify-between">
           <div>
@@ -342,9 +360,13 @@ export default function StoreDashboard() {
             </div>
           </Card>
         </div>
+                    </div>
+                  </BrandAdminUp>
+                </div>
+              </main>
+            </div>
           </div>
-        </BrandAdminUp>
-      </DashboardLayout>
-    </ErrorBoundary>
+        </SidebarProvider>
+      </ErrorBoundary>
   );
 }

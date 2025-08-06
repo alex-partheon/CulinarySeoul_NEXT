@@ -13,7 +13,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
+import { Loader2, Eye, EyeOff, CheckCircle2, ChefHat, ArrowRight, Check, Sparkles, Shield, BarChart3 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -24,9 +29,12 @@ export default function SignUpPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [agreeToTerms, setAgreeToTerms] = useState(false)
+  const [agreeToMarketing, setAgreeToMarketing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1)
 
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -216,16 +224,117 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            CulinarySeoul ERP
-          </CardTitle>
-          <CardDescription className="text-center">
-            새 계정을 생성하여 ERP 시스템에 가입하세요
-          </CardDescription>
-        </CardHeader>
+    <div className="min-h-screen grid lg:grid-cols-2">
+      {/* Left Panel - Branding */}
+      <div className="relative hidden lg:flex flex-col justify-between bg-gradient-to-br from-slate-900 via-slate-800 to-amber-900 p-8 text-white">
+        <div className="absolute inset-0 bg-grid-white/[0.02] [mask-image:linear-gradient(0deg,transparent,rgba(255,255,255,0.6))]" />
+        
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-16">
+            <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-amber-500/30">
+              <ChefHat className="w-6 h-6 text-amber-400" />
+            </div>
+            <span className="text-2xl font-bold">CulinarySeoul</span>
+          </div>
+          
+          <div className="space-y-6">
+            <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
+              Start Your Journey to
+              <span className="block text-amber-400 mt-2">F&B Excellence</span>
+            </h1>
+            <p className="text-lg text-gray-300 max-w-md">
+              체계적인 재고 관리와 통합 대시보드로
+              비즈니스 성장을 가속화하세요.
+            </p>
+          </div>
+        </div>
+        
+        <div className="relative space-y-8">
+          {/* Benefits */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wider">
+              가입 혜택
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">14일 무료 체험</p>
+                  <p className="text-xs text-gray-400">모든 기능을 제한 없이 체험하세요</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">전문가 온보딩 지원</p>
+                  <p className="text-xs text-gray-400">시스템 설정부터 활용까지 1:1 지원</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">실시간 데이터 동기화</p>
+                  <p className="text-xs text-gray-400">모든 기기에서 실시간 접근</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Step Indicator */}
+          <div className="pt-8 border-t border-gray-700">
+            <div className="flex items-center gap-3 text-sm">
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center font-medium transition-colors",
+                "bg-amber-500 text-slate-900"
+              )}>
+                1
+              </div>
+              <div className="h-px flex-1 bg-gray-700" />
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center font-medium transition-colors",
+                currentStep >= 2 ? "bg-amber-500 text-slate-900" : "bg-gray-700 text-gray-500"
+              )}>
+                2
+              </div>
+              <div className="h-px flex-1 bg-gray-700" />
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center font-medium transition-colors",
+                success ? "bg-amber-500 text-slate-900" : "bg-gray-700 text-gray-500"
+              )}>
+                3
+              </div>
+            </div>
+            <div className="flex justify-between mt-2 text-xs text-gray-400">
+              <span>계정 정보</span>
+              <span>약관 동의</span>
+              <span>가입 완료</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Right Panel - Sign Up Form */}
+      <div className="flex items-center justify-center p-8 bg-gray-50/50">
+        <Card className="w-full max-w-md border-0 shadow-xl">
+          <CardHeader className="space-y-1 pb-6">
+            <div className="flex items-center justify-center mb-4 lg:hidden">
+              <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center border border-amber-500/30">
+                <ChefHat className="w-6 h-6 text-amber-600" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">
+              Create Your Account
+            </CardTitle>
+            <CardDescription className="text-center">
+              14일 무료 체험으로 모든 기능을 이용해보세요
+            </CardDescription>
+          </CardHeader>
         
         <CardContent className="space-y-4">
           {/* Error Message */}
@@ -240,81 +349,149 @@ export default function SignUpPage() {
           {/* Email/Password Form */}
           <form onSubmit={handleEmailSignUp} className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="fullName" className="text-sm font-medium">
+                이름
+              </Label>
               <Input
+                id="fullName"
                 type="text"
-                placeholder="이름"
+                placeholder="홍길동"
                 value={formData.fullName}
                 onChange={handleInputChange('fullName')}
                 disabled={isLoading}
                 autoComplete="name"
                 required
+                className="h-11"
               />
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium">
+                이메일 주소
+              </Label>
               <Input
+                id="email"
                 type="email"
-                placeholder="이메일 주소"
+                placeholder="name@company.com"
                 value={formData.email}
                 onChange={handleInputChange('email')}
                 disabled={isLoading}
                 autoComplete="email"
                 required
+                className="h-11"
               />
             </div>
             
-            <div className="space-y-2 relative">
-              <Input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="비밀번호 (최소 8자)"
-                value={formData.password}
-                onChange={handleInputChange('password')}
-                disabled={isLoading}
-                autoComplete="new-password"
-                required
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium">
+                비밀번호
+              </Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="최소 8자 이상"
+                  value={formData.password}
+                  onChange={handleInputChange('password')}
+                  disabled={isLoading}
+                  autoComplete="new-password"
+                  required
+                  className="h-11 pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                소문자, 대문자, 숫자, 특수문자 중 2가지 이상 포함
+              </p>
             </div>
 
-            <div className="space-y-2 relative">
-              <Input
-                type={showConfirmPassword ? 'text' : 'password'}
-                placeholder="비밀번호 확인"
-                value={formData.confirmPassword}
-                onChange={handleInputChange('confirmPassword')}
-                disabled={isLoading}
-                autoComplete="new-password"
-                required
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                tabIndex={-1}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                비밀번호 확인
+              </Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="비밀번호를 다시 입력하세요"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange('confirmPassword')}
+                  disabled={isLoading}
+                  autoComplete="new-password"
+                  required
+                  className="h-11 pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            {/* Terms */}
+            <div className="space-y-3 pt-4">
+              <div className="flex items-start space-x-2">
+                <Checkbox 
+                  id="terms" 
+                  checked={agreeToTerms}
+                  onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                  className="mt-0.5"
+                />
+                <Label 
+                  htmlFor="terms" 
+                  className="text-sm font-normal cursor-pointer leading-relaxed"
+                >
+                  <span className="text-red-500">*</span> 
+                  <Link href="/terms" className="underline hover:text-amber-600">
+                    이용약관
+                  </Link>
+                  {' '}및{' '}
+                  <Link href="/privacy" className="underline hover:text-amber-600">
+                    개인정보처리방침
+                  </Link>
+                  에 동의합니다
+                </Label>
+              </div>
+              
+              <div className="flex items-start space-x-2">
+                <Checkbox 
+                  id="marketing" 
+                  checked={agreeToMarketing}
+                  onCheckedChange={(checked) => setAgreeToMarketing(checked as boolean)}
+                  className="mt-0.5"
+                />
+                <Label 
+                  htmlFor="marketing" 
+                  className="text-sm font-normal cursor-pointer leading-relaxed"
+                >
+                  [선택] 마케팅 정보 수신에 동의합니다
+                </Label>
+              </div>
             </div>
 
             <Button
               type="submit"
-              className="w-full"
-              disabled={isLoading || !formData.email || !formData.password || !formData.confirmPassword || !formData.fullName}
+              className="w-full h-11 bg-gradient-to-r from-slate-900 to-slate-700 hover:from-slate-800 hover:to-slate-600 text-white font-medium transition-all duration-200 group"
+              disabled={isLoading || !formData.email || !formData.password || !formData.confirmPassword || !formData.fullName || !agreeToTerms}
             >
               {isLoading ? (
                 <>
@@ -322,26 +499,29 @@ export default function SignUpPage() {
                   가입 중...
                 </>
               ) : (
-                '이메일로 회원가입'
+                <>
+                  무료로 시작하기
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                </>
               )}
             </Button>
           </form>
 
           {/* Divider */}
-          <div className="relative">
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">또는</span>
+              <span className="bg-white px-2 text-muted-foreground">또는 소셜 계정으로</span>
             </div>
           </div>
 
           {/* OAuth Buttons */}
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-3">
             <Button
               variant="outline"
-              className="w-full"
+              className="h-11 hover:bg-gray-50 transition-colors"
               onClick={() => handleOAuthSignUp('google')}
               disabled={isLoading}
             >
@@ -363,12 +543,12 @@ export default function SignUpPage() {
                   fill="#EA4335"
                 />
               </svg>
-              Google로 회원가입
+              <span className="hidden sm:inline">Google</span>
             </Button>
             
             <Button
               variant="outline"
-              className="w-full"
+              className="h-11 hover:bg-gray-50 transition-colors"
               onClick={() => handleOAuthSignUp('kakao')}
               disabled={isLoading}
             >
@@ -378,37 +558,31 @@ export default function SignUpPage() {
                   d="M12 3c5.8 0 10.5 3.7 10.5 8.3 0 2.4-1.2 4.6-3.2 6.2l.9 3.2-3.5-1.9c-1.4.4-2.9.7-4.7.7-5.8 0-10.5-3.7-10.5-8.3S6.2 3 12 3"
                 />
               </svg>
-              카카오로 회원가입
+              <span className="hidden sm:inline">Kakao</span>
             </Button>
           </div>
 
           {/* Footer Links */}
-          <div className="text-center text-sm">
-            <span className="text-gray-600">
-              이미 계정이 있으신가요?{' '}
-              <Link
-                href="/auth/signin"
-                className="text-blue-600 hover:text-blue-500 hover:underline"
-              >
-                로그인
+          <Separator className="my-6" />
+          
+          <div className="text-center space-y-4">
+            <p className="text-sm text-muted-foreground">
+              이미 계정이 있으신가요?
+            </p>
+            <Button
+              variant="ghost"
+              className="w-full h-11 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+              asChild
+            >
+              <Link href="/auth/signin">
+                로그인하기
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
-            </span>
-          </div>
-
-          {/* Terms */}
-          <div className="text-xs text-gray-500 text-center">
-            회원가입 시{' '}
-            <Link href="/terms" className="underline hover:text-gray-700">
-              이용약관
-            </Link>
-            {' '}및{' '}
-            <Link href="/privacy" className="underline hover:text-gray-700">
-              개인정보처리방침
-            </Link>
-            에 동의하게 됩니다.
+            </Button>
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

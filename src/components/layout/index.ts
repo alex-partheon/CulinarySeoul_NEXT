@@ -6,6 +6,6 @@ export { DashboardFooter } from './DashboardFooter';
 export { BreadcrumbNav } from './BreadcrumbNav';
 
 // 공개 페이지 레이아웃 컴포넌트
-export { PublicLayout, generatePublicMetadata } from './PublicLayout';
+export { PublicLayout } from './PublicLayout';
 export { PublicHeader } from './PublicHeader';
 export { PublicFooter } from './PublicFooter';

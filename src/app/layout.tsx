@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Source_Serif_4, JetBrains_Mono } from 'next/font/google';
 import { AuthProvider } from '@/lib/supabase/auth-provider';
 import { ThemeProvider } from '@/components/theme/theme-provider';
+import { QueryProvider } from '@/lib/react-query/query-provider';
 import { Toaster } from '@/components/ui/toast';
 import './globals.css';
 
@@ -39,8 +40,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <link
+          rel="stylesheet"
+          href="/fonts/pretendard.css"
+        />
+      </head>
       <body
         className={`${plusJakartaSans.variable} ${sourceSerif4.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        style={{ fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif' }}
       >
         <ThemeProvider
           attribute="class"
@@ -48,10 +56,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            {children}
-            <Toaster />
-          </AuthProvider>
+          <QueryProvider>
+            <AuthProvider>
+              {children}
+              <Toaster />
+            </AuthProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

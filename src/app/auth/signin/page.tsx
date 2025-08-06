@@ -13,12 +13,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Eye, EyeOff } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Separator } from '@/components/ui/separator'
+import { Loader2, Eye, EyeOff, ChefHat, ArrowRight, Sparkles } from 'lucide-react'
 
 export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
@@ -28,6 +32,16 @@ export default function SignInPage() {
   const { signIn, signInWithOAuth, user, loading } = useAuth()
 
   const redirectTo = searchParams.get('redirect') || '/company/dashboard'
+
+  // Handle URL parameters for error messages
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    const messageParam = searchParams.get('message')
+    
+    if (errorParam === 'unauthorized' && messageParam) {
+      setError(decodeURIComponent(messageParam))
+    }
+  }, [searchParams])
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -125,16 +139,71 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            CulinarySeoul ERP
-          </CardTitle>
-          <CardDescription className="text-center">
-            ERP 시스템에 로그인하여 업무를 시작하세요
-          </CardDescription>
-        </CardHeader>
+    <div className="min-h-screen grid lg:grid-cols-2">
+      {/* Left Panel - Branding */}
+      <div className="relative hidden lg:flex flex-col justify-between gradient-premium p-8 text-white">
+        <div className="absolute inset-0 bg-grid opacity-[0.02] [mask-image:linear-gradient(0deg,transparent,rgba(255,255,255,0.6))]" />
+        
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-16">
+            <div className="w-12 h-12 glass rounded-xl flex items-center justify-center">
+              <ChefHat className="w-6 h-6 text-amber-400" />
+            </div>
+            <span className="text-2xl font-bold">CulinarySeoul</span>
+          </div>
+          
+          <div className="space-y-6">
+            <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
+              Global Food Service
+              <span className="block text-amber-400 mt-2">Excellence</span>
+            </h1>
+            <p className="text-lg text-gray-300 max-w-md">
+              서울의 미식 문화를 선도하는 통합 F&B 관리 시스템으로
+              비즈니스의 새로운 가능성을 발견하세요.
+            </p>
+          </div>
+        </div>
+        
+        <div className="relative space-y-8">
+          <div className="flex items-center gap-4 text-sm text-gray-400">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>FIFO 재고관리</span>
+            </div>
+            <span>•</span>
+            <span>실시간 대시보드</span>
+            <span>•</span>
+            <span>브랜드 분리 지원</span>
+          </div>
+          
+          <blockquote className="border-l-2 border-amber-500/50 pl-4 text-gray-300">
+            <p className="text-sm italic">
+              "CulinarySeoul ERP 덕분에 우리 카페의 재고 관리가 체계화되었고,
+              원가 절감에 큰 도움이 되었습니다."
+            </p>
+            <footer className="mt-2 text-xs text-gray-400">
+              — 김민수, 밀랍 성수점 점장
+            </footer>
+          </blockquote>
+        </div>
+      </div>
+      
+      {/* Right Panel - Sign In Form */}
+      <div className="flex items-center justify-center p-8 bg-gray-50/50">
+        <Card className="w-full max-w-md border-0 shadow-xl">
+          <CardHeader className="space-y-1 pb-6">
+            <div className="flex items-center justify-center mb-4 lg:hidden">
+              <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center border border-amber-500/30">
+                <ChefHat className="w-6 h-6 text-amber-600" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">
+              Welcome Back
+            </CardTitle>
+            <CardDescription className="text-center">
+              계정에 로그인하여 대시보드로 이동하세요
+            </CardDescription>
+          </CardHeader>
         
         <CardContent className="space-y-4">
           {/* Success Message */}
@@ -158,44 +227,78 @@ export default function SignInPage() {
           {/* Email/Password Form */}
           <form onSubmit={handleEmailSignIn} className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium">
+                이메일 주소
+              </Label>
               <Input
+                id="email"
                 type="email"
-                placeholder="이메일 주소"
+                placeholder="name@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
                 autoComplete="email"
                 required
+                className="h-11"
               />
             </div>
             
-            <div className="space-y-2 relative">
-              <Input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-                autoComplete="current-password"
-                required
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium">
+                비밀번호
+              </Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  autoComplete="current-password"
+                  required
+                  className="h-11 pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="remember" 
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                />
+                <Label 
+                  htmlFor="remember" 
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  로그인 상태 유지
+                </Label>
+              </div>
+              <Link
+                href="/auth/reset-password"
+                className="text-sm text-amber-600 hover:text-amber-700 font-medium transition-colors"
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
+                비밀번호 찾기
+              </Link>
             </div>
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full h-11 bg-gradient-to-r from-slate-900 to-slate-700 hover:from-slate-800 hover:to-slate-600 text-white font-medium transition-all duration-200 group"
               disabled={isLoading || !email || !password}
             >
               {isLoading ? (
@@ -204,26 +307,29 @@ export default function SignInPage() {
                   로그인 중...
                 </>
               ) : (
-                '이메일로 로그인'
+                <>
+                  로그인
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                </>
               )}
             </Button>
           </form>
 
           {/* Divider */}
-          <div className="relative">
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">또는</span>
+              <span className="bg-white px-2 text-muted-foreground">또는 소셜 로그인</span>
             </div>
           </div>
 
           {/* OAuth Buttons */}
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-3">
             <Button
               variant="outline"
-              className="w-full"
+              className="h-11 hover:bg-gray-50 transition-colors"
               onClick={() => handleOAuthSignIn('google')}
               disabled={isLoading}
             >
@@ -245,12 +351,12 @@ export default function SignInPage() {
                   fill="#EA4335"
                 />
               </svg>
-              Google로 로그인
+              <span className="hidden sm:inline">Google</span>
             </Button>
             
             <Button
               variant="outline"
-              className="w-full"
+              className="h-11 hover:bg-gray-50 transition-colors"
               onClick={() => handleOAuthSignIn('kakao')}
               disabled={isLoading}
             >
@@ -260,32 +366,31 @@ export default function SignInPage() {
                   d="M12 3c5.8 0 10.5 3.7 10.5 8.3 0 2.4-1.2 4.6-3.2 6.2l.9 3.2-3.5-1.9c-1.4.4-2.9.7-4.7.7-5.8 0-10.5-3.7-10.5-8.3S6.2 3 12 3"
                 />
               </svg>
-              카카오로 로그인
+              <span className="hidden sm:inline">Kakao</span>
             </Button>
           </div>
 
           {/* Footer Links */}
-          <div className="text-center text-sm space-y-2">
-            <div>
-              <Link
-                href="/auth/reset-password"
-                className="text-blue-600 hover:text-blue-500 hover:underline"
-              >
-                비밀번호를 잊으셨나요?
+          <Separator className="my-6" />
+          
+          <div className="text-center space-y-4">
+            <p className="text-sm text-muted-foreground">
+              아직 계정이 없으신가요?
+            </p>
+            <Button
+              variant="ghost"
+              className="w-full h-11 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+              asChild
+            >
+              <Link href="/auth/signup">
+                무료로 시작하기
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
-            </div>
-            <div className="text-gray-600">
-              계정이 없으신가요?{' '}
-              <Link
-                href="/auth/signup"
-                className="text-blue-600 hover:text-blue-500 hover:underline"
-              >
-                회원가입
-              </Link>
-            </div>
+            </Button>
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

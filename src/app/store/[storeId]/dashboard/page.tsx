@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,10 +11,14 @@ import { Progress } from '@/components/ui/progress';
 import { MetricCard } from '@/components/ui/metric-card';
 import { CalendarWidget } from '@/components/ui/calendar-widget';
 import { ActivityChart } from '@/components/ui/activity-chart';
-import { DataTable } from '@/components/ui/data-table';
+
 import { useERPRole } from '@/hooks/useERPRole';
 import type { Database } from '@/types/database.types';
 import { AlertTriangle, TrendingUp, Users, Package, DollarSign, ShoppingCart, Star, BarChart3, Bell, Clock, Activity, Zap } from 'lucide-react';
+import { AppSidebarStore } from '@/components/dashboard/app-sidebar-store';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { SiteHeaderStore } from '@/components/dashboard/site-header-store';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 // Supabase 클라이언트 (데이터베이스 전용)
 const supabase = createClient<Database>(
@@ -55,6 +58,7 @@ export default function StoreDashboard() {
   const [hourlyData, setHourlyData] = useState<Array<{ hour: number; value: number }>>([]);
   const [recentOrders, setRecentOrders] = useState<Array<{ id: string; time: string; items: number; amount: number; status: string }>>([]);
   const params = useParams();
+  const router = useRouter();
   const { profile, role, hasRole, isStoreLevel } = useERPRole();
   
   const storeId = params.storeId as string;
@@ -74,8 +78,7 @@ export default function StoreDashboard() {
       
       // 매장 접근 권한 확인
       if (!isStoreLevel()) {
-        setError('매장 대시보드 접근 권한이 없습니다.');
-        setLoading(false);
+        router.push('/auth/signin?error=unauthorized&message=매장 대시보드에 접근할 권한이 없습니다.');
         return;
       }
 
@@ -182,131 +185,108 @@ export default function StoreDashboard() {
   }, [profile, storeId, isStoreLevel, hasRole, realTimeUpdates]);
 
 
-  // 로딩과 에러는 DashboardLayout에서 처리됨
   if (loading) {
-    return null; // DashboardLayout의 로딩 UI 사용
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600"></div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <DashboardLayout title="매장 대시보드" storeId={storeId}>
+      <div className="container mx-auto p-6">
         <Alert className="border-red-200 bg-red-50">
           <AlertTriangle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
             {error}
           </AlertDescription>
         </Alert>
-      </DashboardLayout>
+      </div>
     );
   }
 
-  // 사용자 역할에 따른 브레드크럼 아이템 생성
-  const breadcrumbItems = [
-    { label: '홈', href: '/' },
-    { label: '매장 관리', href: '/stores' },
-    { label: storeInfo?.name || '매장', current: true }
-  ];
-
   return (
-    <DashboardLayout 
-      title={`${storeInfo?.name} 매장 대시보드`}
-      storeId={storeId}
-      breadcrumbItems={breadcrumbItems}
-    >
-      <div className="space-y-6">
-        {/* 실시간 상태 알림 */}
-        {realTimeUpdates > 0 && (
-          <Alert className="border-blue-200 bg-blue-50">
-            <TrendingUp className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-800">
-              실시간 데이터가 업데이트되었습니다. (업데이트 {realTimeUpdates}회)
-            </AlertDescription>
-          </Alert>
-        )}
+    <ErrorBoundary>
+      <SidebarProvider>
+        <div className="flex h-screen w-full overflow-hidden">
+          <AppSidebarStore storeId={storeId} />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <SiteHeaderStore />
+            <main className="flex-1 overflow-y-auto bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+              <div className="p-6 lg:p-8 space-y-8">
 
-        {/* 매장 운영 상태 표시 */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">{storeInfo?.name}</h1>
-          <div className="flex items-center space-x-4">
-            <Badge variant="outline" className="text-green-600 border-green-600">
-              • 운영 중
-            </Badge>
-            {hasRole(['store_manager']) && (
-              <Badge variant="secondary">
-                매니저
-              </Badge>
-            )}
-          </div>
-        </div>
 
-        {/* 상단 KPI 메트릭 카드 섹션 - tweakcn 스타일 */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard
-              title="일일 매출"
-              value={`₩${stats.daily_sales.toLocaleString()}`}
-              change={realTimeUpdates > 0 ? 12.5 : undefined}
-              changeType="positive"
-              description="전일 대비"
-              className="border-l-4 border-l-indigo-600 hover:shadow-lg transition-shadow"
-            />
-            
-            <MetricCard
-              title="오늘 주문"
-              value={stats.orders_today}
-              change={8.2}
-              changeType="positive"
-              description={`${realTimeUpdates > 0 ? '+' + Math.floor(realTimeUpdates / 2) + '건' : '실시간'}`}
-              className="border-l-4 border-l-emerald-600 hover:shadow-lg transition-shadow"
-            />
-            
-            <MetricCard
-              title="부족 재고"
-              value={stats.low_stock_items}
-              changeType={stats.low_stock_items > 5 ? "negative" : undefined}
-              description={stats.low_stock_items > 5 ? "즉시 보충 필요" : "정상 재고"}
-              className={`border-l-4 ${
-                stats.low_stock_items > 5 ? 'border-l-red-600' : 
-                stats.low_stock_items > 2 ? 'border-l-yellow-600' : 'border-l-green-600'
-              } hover:shadow-lg transition-shadow`}
-            />
-            
-            <MetricCard
-              title="근무 직원"
-              value={stats.staff_count}
-              description="현재 근무중"
-              className="border-l-4 border-l-violet-600 hover:shadow-lg transition-shadow"
-            />
-          </div>
-        )}
+                {/* 상단 KPI 메트릭 카드 섹션 */}
+                {stats && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <MetricCard
+                      title="일일 매출"
+                      value={`₩${stats.daily_sales.toLocaleString()}`}
+                      change={realTimeUpdates > 0 ? 12.5 : undefined}
+                      changeType="positive"
+                      description="전일 대비"
+                      className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-yellow-50 to-white"
+                    />
+                    
+                    <MetricCard
+                      title="오늘 주문"
+                      value={stats.orders_today}
+                      change={8.2}
+                      changeType="positive"
+                      description={`${realTimeUpdates > 0 ? '+' + Math.floor(realTimeUpdates / 2) + '건' : '실시간'}`}
+                      className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-emerald-50 to-white"
+                    />
+                    
+                    <MetricCard
+                      title="부족 재고"
+                      value={stats.low_stock_items}
+                      changeType={stats.low_stock_items > 5 ? "negative" : undefined}
+                      description={stats.low_stock_items > 5 ? "즉시 보충 필요" : "정상 재고"}
+                      className={`border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br ${
+                        stats.low_stock_items > 5 ? 'from-red-50' : 
+                        stats.low_stock_items > 2 ? 'from-yellow-50' : 'from-green-50'
+                      } to-white`}
+                    />
+                    
+                    <MetricCard
+                      title="근무 직원"
+                      value={stats.staff_count}
+                      description="현재 근무중"
+                      className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-violet-50 to-white"
+                    />
+                  </div>
+                )}
 
-        {/* 운영 현황 섹션 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 월간 매출 캘린더 */}
-          <CalendarWidget
-            title="월간 매출 현황"
-            days={calendarData}
-            valueLabel="일별 매출"
-            className="h-full"
-          />
+                {/* 운영 현황 섹션 */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* 월간 매출 캘린더 */}
+                  <CalendarWidget
+                    title="월간 매출 현황"
+                    days={calendarData}
+                    valueLabel="일별 매출"
+                    className="h-full border-0 shadow-lg"
+                  />
 
-          {/* 시간대별 주문량 */}
-          <ActivityChart
-            data={hourlyData}
-            title="시간대별 주문량"
-            color="#6366f1"
-            className="h-full"
-          />
-        </div>
+                  {/* 시간대별 주문량 */}
+                  <ActivityChart
+                    data={hourlyData}
+                    title="시간대별 주문량"
+                    color="#eab308"
+                    className="h-full border-0 shadow-lg"
+                  />
+                </div>
 
-        {/* 최근 주문 및 실시간 알림 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 최근 주문 테이블 */}
-          <Card className="lg:col-span-2 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <ShoppingCart className="h-5 w-5 mr-2 text-indigo-600" />
-              최근 주문
-            </h3>
+                {/* 최근 주문 및 실시간 알림 */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* 최근 주문 테이블 */}
+                  <Card className="lg:col-span-2 p-6 border-0 shadow-lg">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                      <ShoppingCart className="h-5 w-5 mr-2 text-yellow-600" />
+                      최근 주문
+                    </h3>
             <div className="space-y-3">
               {recentOrders.map((order) => (
                 <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -337,12 +317,12 @@ export default function StoreDashboard() {
             </Button>
           </Card>
 
-          {/* 실시간 알림 위젯 */}
-          <Card className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <Bell className="h-5 w-5 mr-2 text-amber-600" />
-              실시간 알림
-            </h3>
+                  {/* 실시간 알림 위젯 */}
+                  <Card className="p-6 border-0 shadow-lg">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                      <Bell className="h-5 w-5 mr-2 text-amber-600" />
+                      실시간 알림
+                    </h3>
             <div className="space-y-3">
               <div className="p-3 bg-red-50 rounded-lg border-l-4 border-l-red-600">
                 <div className="flex items-start space-x-2">
@@ -375,14 +355,14 @@ export default function StoreDashboard() {
           </Card>
         </div>
 
-        {/* 매장 성과 지표 */}
-        {stats && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <Activity className="h-5 w-5 mr-2 text-indigo-600" />
-                매장 성과
-              </h3>
+                {/* 매장 성과 지표 */}
+                {stats && (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <Card className="p-6 border-0 shadow-lg hover:shadow-xl transition-all">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <Activity className="h-5 w-5 mr-2 text-yellow-600" />
+                        매장 성과
+                      </h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">월 매출 달성률</span>
@@ -404,11 +384,11 @@ export default function StoreDashboard() {
               </div>
             </Card>
 
-            <Card className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <Star className="h-5 w-5 mr-2 text-amber-600" />
-                고객 만족도
-              </h3>
+                    <Card className="p-6 border-0 shadow-lg hover:shadow-xl transition-all">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <Star className="h-5 w-5 mr-2 text-amber-600" />
+                        고객 만족도
+                      </h3>
               <div className="flex flex-col items-center">
                 <div className="text-5xl font-bold text-amber-600 mb-2">
                   {stats.customer_satisfaction.toFixed(1)}
@@ -448,12 +428,12 @@ export default function StoreDashboard() {
               </div>
             </Card>
 
-            {/* 빠른 액션 */}
-            <Card className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <Zap className="h-5 w-5 mr-2 text-yellow-600" />
-                빠른 액션
-              </h3>
+                    {/* 빠른 액션 */}
+                    <Card className="p-6 border-0 shadow-lg hover:shadow-xl transition-all">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <Zap className="h-5 w-5 mr-2 text-yellow-600" />
+                        빠른 액션
+                      </h3>
               <div className="space-y-3">
                 <Button 
                   variant={stats.low_stock_items > 5 ? "destructive" : "outline"} 
@@ -481,13 +461,13 @@ export default function StoreDashboard() {
                 </Button>
               </div>
             </Card>
-          </div>
-        )}
+                  </div>
+                )}
 
-        {/* 매장 운영 메뉴 - tweakcn 스타일 그리드 */}
-        <div className="mt-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-6">매장 운영</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* 매장 운영 메뉴 */}
+                <div className="mt-8">
+                  <h3 className="text-lg font-medium text-gray-900 mb-6">매장 운영</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card className="p-6 hover:shadow-lg transition-all duration-200 cursor-pointer border-t-4 border-t-indigo-600">
               <div className="flex items-start space-x-4">
                 <div className="p-3 bg-indigo-100 rounded-lg">
@@ -587,9 +567,13 @@ export default function StoreDashboard() {
                 </div>
               </div>
             </Card>
+                  </div>
+                </div>
+              </div>
+            </main>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+      </SidebarProvider>
+    </ErrorBoundary>
   );
 }

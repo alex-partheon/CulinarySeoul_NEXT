@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/supabase/auth-provider';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { DashboardLayout } from '@/components/layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BrandAdminUp, CompanyAdminUp, AccessDenied } from '@/components/ui/protected-component';
+import { BrandAdminUp, AccessDenied } from '@/components/ui/protected-component';
 import { ErrorBoundary, InlineError } from '@/components/ui/error-boundary';
+import { AppSidebarCompany } from '@/components/dashboard/app-sidebar-company';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { SiteHeaderCompany } from '@/components/dashboard/site-header-company';
 import {
   Building2,
   Store,
@@ -20,8 +22,12 @@ import {
 } from 'lucide-react';
 import type { Brand, ERPRole } from '@/types/database.types';
 
+interface BrandWithStores extends Brand {
+  stores?: { count: number }[];
+}
+
 export default function BrandDashboard() {
-  const [brands, setBrands] = useState<Brand[]>([]);
+  const [brands, setBrands] = useState<BrandWithStores[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -102,20 +108,36 @@ export default function BrandDashboard() {
 
   if (error) {
     return (
-      <DashboardLayout title="브랜드 관리">
-        <InlineError 
-          message={error} 
-          onRetry={() => window.location.reload()}
-        />
-      </DashboardLayout>
+      <SidebarProvider>
+        <div className="flex h-screen w-full overflow-hidden">
+          <AppSidebarCompany />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <SiteHeaderCompany />
+            <main className="flex-1 overflow-y-auto bg-gradient-to-br from-blue-50 via-white to-blue-50">
+              <div className="p-6 lg:p-8">
+                <InlineError 
+                  message={error} 
+                  onRetry={() => window.location.reload()}
+                />
+              </div>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 
   return (
     <ErrorBoundary>
-      <DashboardLayout title="브랜드 관리">
-        <BrandAdminUp fallback={<AccessDenied message="브랜드 대시보드에 접근할 권한이 없습니다." />}>
-          <div className="space-y-6">
+      <SidebarProvider>
+        <div className="flex h-screen w-full overflow-hidden">
+          <AppSidebarCompany />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <SiteHeaderCompany />
+            <main className="flex-1 overflow-y-auto bg-gradient-to-br from-blue-50 via-white to-blue-50">
+              <div className="p-6 lg:p-8">
+                <BrandAdminUp fallback={<AccessDenied message="브랜드 대시보드에 접근할 권한이 없습니다." />}>
+                  <div className="space-y-6">
         {/* 헤더 섹션 */}
         <div className="flex items-center justify-between">
           <div>
@@ -280,9 +302,13 @@ export default function BrandDashboard() {
             </div>
           </Card>
         </div>
+                  </div>
+                </BrandAdminUp>
+              </div>
+            </main>
           </div>
-        </BrandAdminUp>
-      </DashboardLayout>
+        </div>
+      </SidebarProvider>
     </ErrorBoundary>
   );
 }

@@ -9,6 +9,7 @@ const mockDeleteUser = jest.fn();
 const mockSignIn = jest.fn();
 const mockSignOut = jest.fn();
 const mockGetSession = jest.fn();
+const mockGetUser = jest.fn();
 const mockFrom = jest.fn();
 
 // Mock Supabase client with proper typing
@@ -21,6 +22,7 @@ const mockSupabase = {
     signInWithPassword: mockSignIn,
     signOut: mockSignOut,
     getSession: mockGetSession,
+    getUser: mockGetUser,
   },
   from: mockFrom,
   realtime: {
@@ -72,7 +74,7 @@ describe('보안 토큰 관리 시스템', () => {
         error: null,
       });
 
-      // 토큰 갱신 시뮬레이션
+      // 사용자 정보 확인
       const { data: session } = await supabase.auth.getSession();
 
       expect(session?.session?.access_token).toBe('new-access-token');

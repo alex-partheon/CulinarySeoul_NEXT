@@ -266,7 +266,7 @@ describe('ERP 사용자 프로필 및 역할 시스템', () => {
 
       // Mock 함수 설정
       const mockAuth = {
-        getSession: jest.fn().mockResolvedValue({ data: mockSession, error: null }),
+        getUser: jest.fn().mockResolvedValue({ data: { user: mockSession.user }, error: null }),
       };
       supabase.auth = mockAuth;
 
@@ -276,14 +276,14 @@ describe('ERP 사용자 프로필 및 역할 시스템', () => {
       supabase.from.mockReturnValue({ select: mockSelect });
 
       // 인증 콜백 시뮬레이션
-      const { data: session } = await supabase.auth.getSession();
+      const { data: { user } } = await supabase.auth.getUser();
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, company_id, brand_id, store_id')
-        .eq('id', session?.user?.id)
+        .eq('id', user?.id)
         .single();
 
-      expect(session?.user?.id).toBe(testUserId);
+      expect(user?.id).toBe(testUserId);
       expect(profile?.role).toBe('store_manager');
       expect(profile?.store_id).toBe('store-1');
     });

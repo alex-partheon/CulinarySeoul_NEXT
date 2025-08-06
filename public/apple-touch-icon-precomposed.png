@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#1e293b"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
+    </radialGradient>
+  </defs>
+  <rect width="180" height="180" rx="32" fill="url(#bg)"/>
+  <text x="90" y="115" font-family="-apple-system, BlinkMacSystemFont, system-ui" 
+        font-size="108" font-weight="bold" text-anchor="middle" fill="#f59e0b">C</text>
+  <circle cx="135" cy="135" r="12" fill="#d97706"/>
+</svg>

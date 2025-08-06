@@ -6,6 +6,7 @@ type MockSupabase = Partial<SupabaseClient> & {
     signInWithPassword: jest.Mock;
     signInWithOAuth: jest.Mock;
     getSession: jest.Mock;
+    getUser: jest.Mock;
   };
   from: jest.Mock;
 };
@@ -18,6 +19,7 @@ const mockSupabase: MockSupabase = {
       .mockResolvedValue({ data: { user: null, session: null }, error: null }),
     signInWithOAuth: jest.fn().mockResolvedValue({ data: { provider: '', url: '' }, error: null }),
     getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    getUser: jest.fn().mockResolvedValue({ data: { user: null }, error: null }),
   },
   from: jest.fn().mockImplementation(() => ({
     select: jest.fn().mockReturnThis(),
@@ -136,14 +138,14 @@ describe('로그인 기능 테스트', () => {
       const mockSelect = jest.fn().mockReturnValue({ eq: mockEq });
       supabase.from.mockReturnValue({ select: mockSelect });
 
-      // 세션 확인
-      const { data: session } = await supabase.auth.getSession();
+      // 사용자 세션 확인
+      const { data: sessionData } = await supabase.auth.getSession();
 
       // 프로필 확인
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', session?.session?.user?.id)
+        .eq('id', sessionData?.session?.user?.id)
         .single();
 
       expect(profile?.role).toBe('creator');

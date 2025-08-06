@@ -46,7 +46,7 @@ export default function TestUIPage() {
         </Card>
 
         {/* 카드 테스트 */}
-        <div className="grid-responsive">
+        <div className="grid gap-6 md:gap-8 lg:gap-10">
           <Card className="card">
             <CardHeader>
               <CardTitle>크리에이터 대시보드</CardTitle>

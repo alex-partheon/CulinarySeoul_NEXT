@@ -10,7 +10,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import type { User, Session, AuthError } from '@supabase/supabase-js'
-import type { Database, ERPRole, Profile } from '@/types/database.types'
+import type { ERPRole, Profile } from '@/types/database.types'
 
 // =============================================
 // TYPES AND INTERFACES
@@ -33,12 +33,13 @@ interface AuthContextType {
   signInWithOAuth: (provider: 'google' | 'kakao') => Promise<{ error: AuthError | null }>
   
   // Profile management
-  updateProfile: (updates: Partial<Profile>) => Promise<{ error: any | null }>
+  updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>
   refreshProfile: () => Promise<void>
   refreshClaims: () => Promise<void>
   
   // Role and permission helpers
   hasRole: (role: ERPRole) => boolean
+  hasAnyRole: (roles: ERPRole[]) => boolean
   hasMinimumRole: (minimumRole: ERPRole) => boolean
   canAccessCompany: (companyId: string) => Promise<boolean>
   canAccessBrand: (brandId: string) => Promise<boolean>
@@ -72,14 +73,7 @@ const ROLE_HIERARCHY: Record<ERPRole, number> = {
   store_staff: 10
 }
 
-const ROLE_ROUTES: Record<ERPRole, string> = {
-  super_admin: '/company/dashboard',
-  company_admin: '/company/dashboard',
-  brand_admin: '/brand/dashboard',
-  brand_staff: '/brand/dashboard',
-  store_manager: '/store/dashboard',
-  store_staff: '/store/dashboard'
-}
+// ROLE_ROUTES 제거 - getDefaultDashboard에서 직접 처리
 
 // =============================================
 // AUTH PROVIDER COMPONENT
@@ -128,16 +122,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshClaims = useCallback(async () => {
     try {
-      await supabase.rpc('refresh_user_claims')
+      // Refresh user claims by refetching the profile
+      if (user) {
+        await fetchProfile(user.id)
+      }
       // Force a session refresh to get updated JWT claims
-      const { data: { session: newSession } } = await supabase.auth.getSession()
-      if (newSession) {
-        setSession(newSession)
+      const { data: { user: updatedUser } } = await supabase.auth.getUser()
+      if (updatedUser) {
+        // Get the current session to maintain session state
+        const { data: { session: currentSession } } = await supabase.auth.getSession()
+        if (currentSession) {
+          setSession(currentSession)
+        }
       }
     } catch (error) {
       console.error('Error refreshing claims:', error)
     }
-  }, [supabase])
+  }, [supabase, user, fetchProfile])
 
   // =============================================
   // AUTHENTICATION METHODS
@@ -254,6 +255,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return profile?.role === role
   }, [profile])
 
+  const hasAnyRole = useCallback((roles: ERPRole[]): boolean => {
+    if (!profile?.role || !Array.isArray(roles)) return false
+    return roles.includes(profile.role)
+  }, [profile])
+
   const hasMinimumRole = useCallback((minimumRole: ERPRole): boolean => {
     if (!profile?.role) return false
     
@@ -320,7 +326,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const getDefaultDashboard = useCallback((): string => {
     if (!profile?.role) return '/auth/signin'
-    return ROLE_ROUTES[profile.role]
+    
+    // 권한별 동적 대시보드 경로 생성
+    switch (profile.role) {
+      case 'super_admin':
+      case 'company_admin':
+        return '/company/dashboard'
+      
+      case 'brand_admin':
+       case 'brand_staff':
+         // 사용자의 브랜드 ID 사용
+         if (profile.brand_id) {
+           return `/brand/${profile.brand_id}/dashboard`
+         }
+         return '/brand/dashboard' // fallback
+       
+       case 'store_manager':
+       case 'store_staff':
+         // 사용자의 매장 ID 사용
+         if (profile.store_id) {
+           return `/store/${profile.store_id}/dashboard`
+         }
+         return '/store/dashboard' // fallback
+      
+      default:
+        return '/auth/signin'
+    }
   }, [profile])
 
   const redirectToDashboard = useCallback(() => {
@@ -333,51 +364,89 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // =============================================
 
   useEffect(() => {
-    // Get initial session
+    let mounted = true
+    
+    // Get initial session with optimized loading
     const getInitialSession = async () => {
-      setLoading(true)
+      if (!mounted) return
       
-      const { data: { session: initialSession }, error } = await supabase.auth.getSession()
-      
-      if (error) {
-        console.error('Error getting initial session:', error)
-        setLoading(false)
-        return
-      }
+      try {
+        const { data: { user: initialUser }, error: userError } = await supabase.auth.getUser()
+        
+        if (!mounted) return
+        
+        if (userError) {
+          console.error('Error getting initial user:', userError)
+          setLoading(false)
+          return
+        }
 
-      if (initialSession?.user) {
-        const userProfile = await fetchProfile(initialSession.user.id)
-        setUser(initialSession.user)
-        setProfile(userProfile)
-        setSession(initialSession)
+        if (initialUser) {
+          // Get session for state management
+          const { data: { session: initialSession } } = await supabase.auth.getSession()
+          // Parallel profile fetch for better performance
+          const userProfile = await fetchProfile(initialUser.id)
+          
+          if (!mounted) return
+          
+          setUser(initialUser)
+          setProfile(userProfile)
+          if (initialSession) {
+            setSession(initialSession)
+          }
+        }
+        
+        setLoading(false)
+      } catch (error) {
+        if (mounted) {
+          console.error('Session initialization error:', error)
+          setLoading(false)
+        }
       }
-      
-      setLoading(false)
     }
 
     getInitialSession()
 
-    // Listen for auth changes
+    // Listen for auth changes with debouncing
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        if (!mounted) return
+        
         console.log('Auth state changed:', event, currentSession?.user?.id)
         
-        if (currentSession?.user) {
-          const userProfile = await fetchProfile(currentSession.user.id)
-          setUser(currentSession.user)
-          setProfile(userProfile)
-          setSession(currentSession)
-        } else {
-          setUser(null)
-          setProfile(null)
-          setSession(null)
+        try {
+          if (currentSession?.user) {
+            const userProfile = await fetchProfile(currentSession.user.id)
+            
+            if (!mounted) return
+            
+            setUser(currentSession.user)
+            setProfile(userProfile)
+            setSession(currentSession)
+          } else {
+            if (mounted) {
+              setUser(null)
+              setProfile(null)
+              setSession(null)
+            }
+          }
+          
+          if (mounted) {
+            setLoading(false)
+          }
+        } catch (error) {
+          if (mounted) {
+            console.error('Auth state change error:', error)
+            setLoading(false)
+          }
         }
-        
-        setLoading(false)
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [supabase, fetchProfile])
 
   // =============================================
@@ -386,13 +455,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     if (loading) return
-
-    const publicPaths = ['/', '/auth/signin', '/auth/signup', '/auth/callback', '/auth/reset-password']
-    const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(path))
     
-    // Redirect authenticated users away from auth pages
+    // Redirect authenticated users away from auth pages ONLY (not from main page)
     if (user && (pathname === '/auth/signin' || pathname === '/auth/signup')) {
       redirectToDashboard()
+      return
+    }
+    
+    // Allow authenticated users to stay on main page (/)
+    if (user && pathname === '/') {
       return
     }
     
@@ -448,6 +519,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     // Permission methods
     hasRole,
+    hasAnyRole,
     hasMinimumRole,
     canAccessCompany,
     canAccessBrand,

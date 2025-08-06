@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +14,12 @@ import { AreaChart } from '@/components/ui/area-chart';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { useERPRole } from '@/hooks/useERPRole';
 import type { Database } from '@/types/database.types';
-import { Building2, Store, Package, ChefHat, TrendingUp, BarChart3, AlertTriangle, Users, DollarSign, Activity, Zap, ShieldCheck, Rocket } from 'lucide-react';
+import { Building2, Store, Package, ChefHat, TrendingUp, BarChart3, AlertTriangle, Users, Activity, Zap, ShieldCheck, Rocket } from 'lucide-react';
+import { AppSidebarBrand } from '@/components/dashboard/app-sidebar-brand';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { SiteHeaderBrand } from '@/components/dashboard/site-header-brand';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+
 
 // Supabase 클라이언트 (데이터베이스 전용)
 const supabase = createClient<Database>(
@@ -50,6 +54,7 @@ export default function BrandDashboard() {
   const [monthlyData, setMonthlyData] = useState<Array<{ date: string; value: number }>>([]);
   const [storeData, setStoreData] = useState<Array<{ label: string; value: number; color?: string }>>([]);
   const params = useParams();
+  const router = useRouter();
   const { profile, role, hasRole, isBrandLevel } = useERPRole();
   
   const brandId = params.brandId as string;
@@ -69,8 +74,7 @@ export default function BrandDashboard() {
       
       // 브랜드 수준 접근 권한 확인
       if (!isBrandLevel()) {
-        setError('브랜드 대시보드 접근 권한이 없습니다.');
-        setLoading(false);
+        router.push('/auth/signin?error=unauthorized&message=브랜드 대시보드에 접근할 권한이 없습니다.');
         return;
       }
 
@@ -133,122 +137,93 @@ export default function BrandDashboard() {
 
   if (error) {
     return (
-      <DashboardLayout title="브랜드 대시보드" brandId={brandId}>
+      <div className="container mx-auto p-6">
         <Alert className="border-red-200 bg-red-50">
           <AlertTriangle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
             {error}
           </AlertDescription>
         </Alert>
-      </DashboardLayout>
+      </div>
     );
   }
 
-  // 브레드크럼 아이템 생성
-  const breadcrumbItems = [
-    { label: '홈', href: '/' },
-    { label: '브랜드 관리', href: '/brands' },
-    { label: brandInfo?.name || '브랜드', current: true }
-  ];
+
 
   return (
-    <DashboardLayout 
-      title={`${brandInfo?.name} 브랜드 대시보드`}
-      brandId={brandId}
-      breadcrumbItems={breadcrumbItems}
-    >
-      <div className="space-y-6">
-        {/* 실시간 상태 알림 */}
-        {realTimeUpdates > 0 && (
-          <Alert className="border-blue-200 bg-blue-50">
-            <TrendingUp className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-800">
-              브랜드 데이터가 실시간으로 업데이트되었습니다. (업데이트 {realTimeUpdates}회)
-            </AlertDescription>
-          </Alert>
-        )}
+    <ErrorBoundary>
+      <SidebarProvider>
+        <div className="flex h-screen w-full overflow-hidden">
+          <AppSidebarBrand brandId={brandId} />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <SiteHeaderBrand />
+            <main className="flex-1 overflow-y-auto bg-gradient-to-br from-amber-50 via-white to-amber-50">
+              <div className="p-6 lg:p-8 space-y-8">
 
-        {/* 브랜드 헤더 */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{brandInfo?.name}</h1>
-            <p className="text-gray-600 mt-1">브랜드 코드: {brandInfo?.code}</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Badge variant="outline" className="text-blue-600 border-blue-600">
-              • 운영 중
-            </Badge>
-            {hasRole(['brand_admin']) && (
-              <Badge variant="secondary">
-                브랜드 관리자
-              </Badge>
-            )}
-          </div>
-        </div>
-        {/* 핵심 지표 - tweakcn 스타일 MetricCard 사용 */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard
-              title="브랜드 매출"
-              value={`₩${stats.total_sales.toLocaleString()}`}
-              change={realTimeUpdates > 0 ? 8.5 : undefined}
-              changeType="positive"
-              description="전월 대비"
-              className="border-l-4 border-l-indigo-600 hover:shadow-lg transition-shadow"
-            />
-            
-            <MetricCard
-              title="활성 매장"
-              value={stats.total_stores}
-              description="운영 중인 매장"
-              className="border-l-4 border-l-emerald-600 hover:shadow-lg transition-shadow"
-            />
-            
-            <MetricCard
-              title="재고 가치"
-              value={`₩${stats.total_inventory_value.toLocaleString()}`}
-              change={5.2}
-              changeType="positive"
-              description="총 재고 평가액"
-              className="border-l-4 border-l-violet-600 hover:shadow-lg transition-shadow"
-            />
-            
-            <MetricCard
-              title="활성 레시피"
-              value={stats.active_recipes}
-              description="등록된 메뉴"
-              className="border-l-4 border-l-amber-600 hover:shadow-lg transition-shadow"
-            />
-          </div>
-        )}
+                {/* 핵심 지표 */}
+                {stats && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <MetricCard
+                      title="브랜드 매출"
+                      value={`₩${stats.total_sales.toLocaleString()}`}
+                      change={realTimeUpdates > 0 ? 8.5 : undefined}
+                      changeType="positive"
+                      description="전월 대비"
+                      className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-amber-50 to-white"
+                    />
+                    
+                    <MetricCard
+                      title="활성 매장"
+                      value={stats.total_stores}
+                      description="운영 중인 매장"
+                      className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-emerald-50 to-white"
+                    />
+                    
+                    <MetricCard
+                      title="재고 가치"
+                      value={`₩${stats.total_inventory_value.toLocaleString()}`}
+                      change={5.2}
+                      changeType="positive"
+                      description="총 재고 평가액"
+                      className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-violet-50 to-white"
+                    />
+                    
+                    <MetricCard
+                      title="활성 레시피"
+                      value={stats.active_recipes}
+                      description="등록된 메뉴"
+                      className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-orange-50 to-white"
+                    />
+                  </div>
+                )}
 
-        {/* 차트 섹션 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <BarChart3 className="h-5 w-5 mr-2 text-indigo-600" />
-              매장별 매출 비교
-            </h3>
-            <BarChart data={storeData} height={250} />
-          </Card>
+                {/* 차트 섹션 */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card className="p-6 border-0 shadow-lg">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                      <BarChart3 className="h-5 w-5 mr-2 text-amber-600" />
+                      매장별 매출 비교
+                    </h3>
+                    <BarChart data={storeData} height={250} />
+                  </Card>
 
-          <Card className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <TrendingUp className="h-5 w-5 mr-2 text-indigo-600" />
-              월별 매출 트렌드
-            </h3>
-            <AreaChart data={monthlyData} height={250} />
-          </Card>
-        </div>
+                  <Card className="p-6 border-0 shadow-lg">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                      <TrendingUp className="h-5 w-5 mr-2 text-amber-600" />
+                      월별 매출 트렌드
+                    </h3>
+                    <AreaChart data={monthlyData} height={250} />
+                  </Card>
+                </div>
 
-        {/* 브랜드 건강도 및 성과 지표 */}
-        {stats && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <Activity className="h-5 w-5 mr-2 text-indigo-600" />
-                브랜드 건강도
-              </h3>
+                {/* 브랜드 건강도 및 성과 지표 */}
+                {stats && (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <Card className="p-6 border-0 shadow-lg hover:shadow-xl transition-all">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <Activity className="h-5 w-5 mr-2 text-amber-600" />
+                        브랜드 건강도
+                      </h3>
               <div className="flex items-center justify-center">
                 <CircularProgress 
                   value={Math.round((stats.monthly_growth + stats.customer_satisfaction * 10) / 2)} 
@@ -277,11 +252,11 @@ export default function BrandDashboard() {
               </div>
             </Card>
 
-            <Card className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <Building2 className="h-5 w-5 mr-2 text-orange-600" />
-                분리 준비도
-              </h3>
+                    <Card className="p-6 border-0 shadow-lg hover:shadow-xl transition-all">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <Building2 className="h-5 w-5 mr-2 text-orange-600" />
+                        분리 준비도
+                      </h3>
               <div className="flex items-center justify-center">
                 <CircularProgress 
                   value={stats.separation_readiness} 
@@ -312,12 +287,12 @@ export default function BrandDashboard() {
               )}
             </Card>
 
-            {/* 빠른 액션 카드 */}
-            <Card className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <Zap className="h-5 w-5 mr-2 text-yellow-600" />
-                빠른 액션
-              </h3>
+                    {/* 빠른 액션 카드 */}
+                    <Card className="p-6 border-0 shadow-lg hover:shadow-xl transition-all">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <Zap className="h-5 w-5 mr-2 text-yellow-600" />
+                        빠른 액션
+                      </h3>
               <div className="space-y-3">
                 <Button 
                   variant="outline" 
@@ -349,14 +324,13 @@ export default function BrandDashboard() {
                 </Button>
               </div>
             </Card>
-          </div>
-        )}
+                  </div>
+                )}
 
-
-        {/* 브랜드 관리 메뉴 - tweakcn 스타일 그리드 */}
-        <div className="mt-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-6">브랜드 관리</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* 브랜드 관리 메뉴 */}
+                <div className="mt-8">
+                  <h3 className="text-lg font-medium text-gray-900 mb-6">브랜드 관리</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card className="p-6 hover:shadow-lg transition-all duration-200 cursor-pointer border-t-4 border-t-indigo-600">
               <div className="flex items-start space-x-4">
                 <div className="p-3 bg-indigo-100 rounded-lg">
@@ -449,9 +423,13 @@ export default function BrandDashboard() {
                 </div>
               </div>
             </Card>
+                  </div>
+                </div>
+              </div>
+            </main>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+      </SidebarProvider>
+    </ErrorBoundary>
   );
 }
