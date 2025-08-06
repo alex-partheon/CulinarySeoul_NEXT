@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 18. 개발환경은 npm이야.
 19. 개발환경은 git이야.
 20. 개발환경은 supabase cli이야.
-21. 개발환경은 next.js 14이야.
+21. 개발환경은 next.js 15.4.x이야.
 22. 개발환경은 typescript이야.
 23. 개발환경은 tailwindcss 3.4.17이야.
 24. 개발환경은 shadcn/ui이야.
@@ -53,11 +53,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Tailwind CSS 4.x → 3.x 다운그레이드 완료 🔧
 
 **문제:**
+
 - Tailwind CSS 4.x 문법으로 인한 CSS 파싱 오류 발생
 - "Unexpected token Function("--spacing")" 오류로 개발 서버 실행 불가
 - 4.x 전용 문법이 3.x 환경에서 호환되지 않음
 
 **해결:**
+
 - **패키지 다운그레이드**: tailwindcss 4.1.11 → 3.4.17
 - **플러그인 추가**: @tailwindcss/typography 설치
 - **설정 파일 수정**: postcss.config.mjs에서 4.x 전용 설정 제거
@@ -67,6 +69,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **캐시 클리어**: .next, node_modules/.cache 삭제 후 재설치
 
 **주요 변경사항:**
+
 ```bash
 # 패키지 변경
 npm install tailwindcss@3.4.17 @tailwindcss/typography
@@ -80,12 +83,14 @@ npm install tailwindcss@3.4.17 @tailwindcss/typography
 ```
 
 **결과:**
+
 - CSS 파싱 오류 완전 해결
 - 개발 서버 정상 작동 확인
 - 프로젝트 안정성 크게 향상
 - 향후 유지보수성 개선
 
 **변경된 파일:**
+
 - `package.json`: tailwindcss 버전 다운그레이드
 - `postcss.config.mjs`: 4.x 전용 설정 제거
 - `tailwind.config.ts`: var() 함수를 하드코딩 값으로 변경
@@ -96,35 +101,53 @@ npm install tailwindcss@3.4.17 @tailwindcss/typography
 ### 홈페이지 스타일링 문제 해결 ✨
 
 **문제:**
+
 - HeroSection 컴포넌트에서 사용하는 커스텀 CSS 클래스들이 정의되지 않아 스타일링이 적용되지 않음
 - 누락된 클래스: `bg-grid`, `gradient-radial`, `animate-pulse-subtle`, `card-premium`, `hover-lift`, `gradient-accent`, `gradient-primary`
 
 **해결:**
+
 - `src/app/globals.css`에 누락된 커스텀 CSS 클래스들 추가
 - 배경 패턴, 그라디언트, 카드 스타일, 호버 효과, 애니메이션 정의
 - HeroSection의 모든 시각적 요소가 정상적으로 표시되도록 수정
 
 **추가된 CSS 클래스:**
+
 ```css
 /* 배경 패턴 */
-.bg-grid { /* 그리드 배경 패턴 */ }
+.bg-grid {
+  /* 그리드 배경 패턴 */
+}
 
 /* 그라디언트 유틸리티 */
-.gradient-radial { /* 원형 그라디언트 */ }
-.gradient-accent { /* 액센트 그라디언트 */ }
-.gradient-primary { /* 프라이머리 그라디언트 */ }
+.gradient-radial {
+  /* 원형 그라디언트 */
+}
+.gradient-accent {
+  /* 액센트 그라디언트 */
+}
+.gradient-primary {
+  /* 프라이머리 그라디언트 */
+}
 
 /* 카드 스타일 */
-.card-premium { /* 프리미엄 카드 스타일 */ }
+.card-premium {
+  /* 프리미엄 카드 스타일 */
+}
 
 /* 호버 효과 */
-.hover-lift { /* 호버 시 상승 효과 */ }
+.hover-lift {
+  /* 호버 시 상승 효과 */
+}
 
 /* 애니메이션 */
-.animate-pulse-subtle { /* 부드러운 펄스 애니메이션 */ }
+.animate-pulse-subtle {
+  /* 부드러운 펄스 애니메이션 */
+}
 ```
 
 **변경된 파일:**
+
 - `src/app/globals.css`: 커스텀 CSS 클래스들 추가
 
 ### 회사 대시보드 성능 최적화 완료 🚀
@@ -385,6 +408,7 @@ const safeData = result.status === 'fulfilled' ? result.value : fallbackData;
 ### 회사 대시보드 성능 최적화 완료 (2025-01-06)
 
 **최적화 목표 달성**:
+
 - 네트워크 요청 수 66% 감소 (3개 → 1개)
 - TODO 상태 계산 로직을 실제 계산으로 대체
 - 다층 캐싱 시스템 도입으로 사용자 경험 개선
@@ -399,11 +423,12 @@ const safeData = result.status === 'fulfilled' ? result.value : fallbackData;
    - 서버사이드 캐싱 (5분 TTL)
 
 2. **클라이언트 사이드 캐시 시스템**:
+
    ```typescript
    class DashboardCache {
-     static set(key: string, data: CompanyStats, ttl: number): void
-     static get(key: string): CompanyStats | null
-     static invalidate(pattern?: string): void
+     static set(key: string, data: CompanyStats, ttl: number): void;
+     static get(key: string): CompanyStats | null;
+     static invalidate(pattern?: string): void;
    }
    ```
 
@@ -424,18 +449,21 @@ const safeData = result.status === 'fulfilled' ? result.value : fallbackData;
    - 로딩 상태 애니메이션
 
 **수정된 파일**:
+
 - `supabase/migrations/015_create_company_dashboard_rpc.sql`: RPC 함수 및 캐시 테이블
 - `src/app/company/dashboard/page.tsx`: 최적화된 데이터 페칭 로직
 - `scripts/test-dashboard-performance.js`: 성능 벤치마크 테스트 스크립트
 - `docs/DASHBOARD_PERFORMANCE_OPTIMIZATION.md`: 상세 최적화 가이드
 
 **성능 개선 결과**:
+
 - 데이터베이스 호출 최소화: JOIN 기반 단일 쿼리
 - 다층 캐싱 전략: 클라이언트 캐시 (2분) + 서버 캐시 (5분)
 - 네트워크 라운드트립 감소: 66% 감소
 - 로딩 시간 예상 단축: 50-70%
 
 **모니터링 기능**:
+
 - 콘솔 로그를 통한 캐시 히트/미스 확인
 - 성능 메트릭 추적
 - 에러 핸들링 및 폴백 동작 로깅
