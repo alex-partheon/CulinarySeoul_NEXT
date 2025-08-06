@@ -158,7 +158,10 @@ export default function StoresManagementPage() {
 
       setBrands(processedBrands);
     } catch (error) {
-      console.error('브랜드 로딩 중 오류:', error);
+      console.error('브랜드 로딩 중 오류:', {
+        message: error instanceof Error ? error.message : String(error),
+        error: error
+      });
     }
   }, []);
 
@@ -179,7 +182,10 @@ export default function StoresManagementPage() {
 
       setUsers(processedUsers);
     } catch (error) {
-      console.error('사용자 로딩 중 오류:', error);
+      console.error('사용자 로딩 중 오류:', {
+        message: error instanceof Error ? error.message : String(error),
+        error: error
+      });
     }
   }, []);
 
@@ -292,7 +298,10 @@ export default function StoresManagementPage() {
       setStats(stats);
       
     } catch (error) {
-      console.error('매장 로딩 오류:', error);
+      console.error('매장 로딩 오류:', {
+        message: error instanceof Error ? error.message : String(error),
+        error: error
+      });
       toast.error('매장 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);

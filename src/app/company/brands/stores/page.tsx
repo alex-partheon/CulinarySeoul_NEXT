@@ -98,7 +98,10 @@ export default function StoresManagementPage() {
 
        setStores(formattedStores as StoreData[])
     } catch (error) {
-      console.error('매장 데이터 로딩 실패:', error)
+      console.error('매장 데이터 로딩 실패:', {
+        message: error instanceof Error ? error.message : String(error),
+        error: error
+      })
       toast.error('매장 데이터를 불러오는데 실패했습니다.')
     } finally {
       setLoading(false)
@@ -128,7 +131,10 @@ export default function StoresManagementPage() {
 
       setBrands(formattedBrands)
     } catch (error) {
-      console.error('브랜드 데이터 로딩 실패:', error)
+      console.error('브랜드 데이터 로딩 실패:', {
+        message: error instanceof Error ? error.message : String(error),
+        error: error
+      })
       toast.error('브랜드 데이터를 불러오는데 실패했습니다.')
     }
   }

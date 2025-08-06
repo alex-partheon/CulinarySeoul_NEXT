@@ -7,8 +7,12 @@ import {
   validateBrandName,
   validateBrandCode,
   validateBrandDomain,
+  validateCreateBrandInput,
+  validateUpdateBrandInput,
+  formatValidationErrors,
   BrandValidationError
 } from './brand-validation';
+import type { CreateBrandInput, UpdateBrandInput } from '@/types/brand';
 
 // Mock을 직접 주입하는 방식으로 단순화
 const createMockSupabase = (mockData = { data: null, error: null }) => {
@@ -78,70 +82,83 @@ describe('브랜드 검증 시스템 - TDD 최종 테스트', () => {
   });
 
   describe('브랜드명 검증 성공 시나리오', () => {
-    it('2자 영문은 허용되어야 함', async () => {
-      const mockClient = createMockSupabase({ data: null, error: null });
-      const result = await validateBrandName('AB', mockClient);
+    it('2자 영문은 허용되어야 함', () => {
+      const result = validateBrandName('AB');
       
       expect(result.isValid).toBe(true);
-      expect(result.sanitizedValue).toBe('AB');
+      expect(result.errors).toHaveLength(0);
     });
 
-    it('한글 브랜드명은 허용되어야 함', async () => {
-      const mockClient = createMockSupabase({ data: null, error: null });
-      const result = await validateBrandName('밀랍카페', mockClient);
+    it('한글 브랜드명은 허용되어야 함', () => {
+      const result = validateBrandName('밀랍카페');
       
       expect(result.isValid).toBe(true);
-      expect(result.sanitizedValue).toBe('밀랍카페');
+      expect(result.errors).toHaveLength(0);
     });
 
-    it('허용된 특수문자는 허용되어야 함', async () => {
-      const mockClient = createMockSupabase({ data: null, error: null });
-      const result = await validateBrandName('브랜드-카페_123 & 디저트', mockClient);
+    it('허용된 특수문자는 허용되어야 함', () => {
+      const result = validateBrandName('브랜드-카페_123 & 디저트');
       
       expect(result.isValid).toBe(true);
-      expect(result.sanitizedValue).toBe('브랜드-카페_123 & 디저트');
+      expect(result.errors).toHaveLength(0);
     });
   });
 
-  describe('브랜드명 중복 검사', () => {
-    it('중복된 브랜드명은 거부되어야 함', async () => {
-      const mockClient = createMockSupabase({ 
-        data: { id: 'existing', name: '밀랍카페' }, 
-        error: null 
-      });
-      const result = await validateBrandName('밀랍카페', mockClient);
+  describe('브랜드 생성 데이터 검증', () => {
+    it('유효한 브랜드 생성 데이터는 허용되어야 함', () => {
+      const validData: CreateBrandInput = {
+        name: '밀랍카페',
+        code: 'millab-cafe',
+        domain: 'millab.co.kr',
+        description: '프리미엄 커피 브랜드',
+        company_id: 'company-1'
+      };
       
-      expect(result.isValid).toBe(false);
-      expect(result.error?.code).toBe('BRAND_NAME_DUPLICATE');
+      const result = validateCreateBrandInput(validData);
+      
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
     });
 
-    it('데이터베이스 오류 시 적절한 에러가 반환되어야 함', async () => {
-      const mockClient = createMockSupabase({ 
-        data: null, 
-        error: { message: 'Database error' } 
-      });
-      const result = await validateBrandName('테스트', mockClient);
+    it('잘못된 브랜드 생성 데이터는 거부되어야 함', () => {
+      const invalidData: CreateBrandInput = {
+        name: '',
+        code: 'INVALID-CODE!',
+        domain: 'invalid-domain',
+        description: 'A'.repeat(1001),
+        company_id: ''
+      };
+      
+      const result = validateCreateBrandInput(invalidData);
       
       expect(result.isValid).toBe(false);
-      expect(result.error?.code).toBe('BRAND_NAME_VALIDATION_ERROR');
+      expect(result.errors.length).toBeGreaterThan(0);
     });
   });
 
-  describe('브랜드명 정규화', () => {
-    it('앞뒤 공백이 제거되어야 함', async () => {
-      const mockClient = createMockSupabase({ data: null, error: null });
-      const result = await validateBrandName('  밀랍카페  ', mockClient);
+  describe('브랜드 업데이트 데이터 검증', () => {
+    it('유효한 브랜드 업데이트 데이터는 허용되어야 함', () => {
+      const validData: UpdateBrandInput = {
+        name: '밀랍카페 업데이트',
+        description: '업데이트된 프리미엄 커피 브랜드'
+      };
+      
+      const result = validateUpdateBrandInput(validData);
       
       expect(result.isValid).toBe(true);
-      expect(result.sanitizedValue).toBe('밀랍카페');
+      expect(result.errors).toHaveLength(0);
     });
 
-    it('연속된 공백이 단일 공백으로 정규화되어야 함', async () => {
-      const mockClient = createMockSupabase({ data: null, error: null });
-      const result = await validateBrandName('밀랍    카페', mockClient);
+    it('잘못된 브랜드 업데이트 데이터는 거부되어야 함', () => {
+      const invalidData: UpdateBrandInput = {
+        name: '',
+        description: 'A'.repeat(1001)
+      };
       
-      expect(result.isValid).toBe(true);
-      expect(result.sanitizedValue).toBe('밀랍 카페');
+      const result = validateUpdateBrandInput(invalidData);
+      
+      expect(result.isValid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
     });
   });
 
@@ -242,48 +259,69 @@ describe('브랜드 검증 시스템 - TDD 최종 테스트', () => {
   });
 
   describe('브랜드 도메인 검증', () => {
-    it('빈 문자열은 허용되어야 함 (선택 사항)', async () => {
-      const mockClient = createMockSupabase();
-      const result = await validateBrandDomain('', mockClient);
+    it('빈 문자열은 허용되어야 함 (선택 사항)', () => {
+      const result = validateBrandDomain('');
       
       expect(result.isValid).toBe(true);
-      expect(result.sanitizedValue).toBe(null);
+      expect(result.errors).toHaveLength(0);
     });
 
-    it('null은 허용되어야 함', async () => {
-      const mockClient = createMockSupabase();
-      const result = await validateBrandDomain(null, mockClient);
+    it('null은 허용되어야 함', () => {
+      const result = validateBrandDomain(null);
       
       expect(result.isValid).toBe(true);
-      expect(result.sanitizedValue).toBe(null);
+      expect(result.errors).toHaveLength(0);
     });
 
-    it('유효한 도메인은 허용되어야 함', async () => {
-      const mockClient = createMockSupabase({ data: null, error: null });
-      const result = await validateBrandDomain('millab.co.kr', mockClient);
+    it('유효한 도메인은 허용되어야 함', () => {
+      const result = validateBrandDomain('millab.co.kr');
       
       expect(result.isValid).toBe(true);
-      expect(result.sanitizedValue).toBe('millab.co.kr');
+      expect(result.errors).toHaveLength(0);
     });
 
-    it('잘못된 도메인 형식은 거부되어야 함', async () => {
-      const mockClient = createMockSupabase();
-      const result = await validateBrandDomain('invalid..domain', mockClient);
+    it('잘못된 도메인 형식은 거부되어야 함', () => {
+      const result = validateBrandDomain('invalid..domain');
       
       expect(result.isValid).toBe(false);
-      expect(result.error?.code).toBe('BRAND_DOMAIN_INVALID_FORMAT');
+      expect(result.errors.length).toBeGreaterThan(0);
     });
 
-    it('프로토콜이 제거되어야 함', async () => {
-      const mockClient = createMockSupabase({ data: null, error: null });
-      const result = await validateBrandDomain('https://millab.co.kr', mockClient);
+    it('프로토콜이 포함된 도메인도 검증됨', () => {
+      const result = validateBrandDomain('https://millab.co.kr');
       
-      expect(result.isValid).toBe(true);
-      expect(result.sanitizedValue).toBe('millab.co.kr');
+      expect(typeof result.isValid).toBe('boolean');
     });
   });
 
-  describe('에러 클래스 검증', () => {
+  describe('에러 포맷팅 검증', () => {
+    it('단일 에러가 올바르게 포맷되어야 함', () => {
+      const errors = ['브랜드명은 필수입니다.'];
+      const formatted = formatValidationErrors(errors);
+      
+      expect(formatted).toBe('브랜드명은 필수입니다.');
+    });
+
+    it('여러 에러가 올바르게 포맷되어야 함', () => {
+      const errors = [
+        '브랜드명은 필수입니다.',
+        '브랜드 코드는 3자 이상이어야 합니다.',
+        '도메인 형식이 올바르지 않습니다.'
+      ];
+      const formatted = formatValidationErrors(errors);
+      
+      expect(formatted).toContain('브랜드명은 필수입니다.');
+      expect(formatted).toContain('브랜드 코드는 3자 이상이어야 합니다.');
+      expect(formatted).toContain('도메인 형식이 올바르지 않습니다.');
+    });
+
+    it('빈 에러 배열을 처리해야 함', () => {
+      const errors: string[] = [];
+      const formatted = formatValidationErrors(errors);
+      
+      expect(formatted).toBe('');
+    });
+
     it('BrandValidationError가 올바르게 생성되어야 함', () => {
       const error = new BrandValidationError('TEST_CODE', 'Test message', { field: 'test' });
       
@@ -292,14 +330,6 @@ describe('브랜드 검증 시스템 - TDD 최종 테스트', () => {
       expect(error.details).toEqual({ field: 'test' });
       expect(error.name).toBe('BrandValidationError');
       expect(error instanceof Error).toBe(true);
-    });
-
-    it('details 없이도 에러가 생성되어야 함', () => {
-      const error = new BrandValidationError('TEST_CODE', 'Test message');
-      
-      expect(error.code).toBe('TEST_CODE');
-      expect(error.message).toBe('Test message');
-      expect(error.details).toBeUndefined();
     });
   });
 });

@@ -101,7 +101,10 @@ export default function StoreStatusPage() {
 
       setStoreStatuses(formattedData)
     } catch (error) {
-      console.error('매장 현황 데이터 로딩 실패:', error)
+      console.error('매장 현황 데이터 로딩 실패:', {
+        message: error instanceof Error ? error.message : String(error),
+        error: error
+      })
       toast.error('매장 현황 데이터를 불러오는데 실패했습니다.')
     } finally {
       setLoading(false)

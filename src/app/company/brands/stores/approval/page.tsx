@@ -169,7 +169,10 @@ export default function StoreApprovalPage() {
 
       setPendingStores(mockData);
     } catch (error) {
-      console.error('승인 대기 매장 데이터 로딩 실패:', error);
+      console.error('승인 대기 매장 데이터 로딩 실패:', {
+        message: error instanceof Error ? error.message : String(error),
+        error: error
+      });
       toast.error('승인 대기 매장 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);

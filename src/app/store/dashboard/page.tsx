@@ -88,14 +88,20 @@ export default function StoreDashboard() {
 
         if (storesError) {
           setError('매장 정보를 불러올 수 없습니다.');
-          console.error('Stores fetch error:', storesError);
+          console.error('Stores fetch error:', {
+            message: storesError.message || String(storesError),
+            error: storesError
+          });
           return;
         }
 
         setStores(storesData || []);
 
       } catch (err) {
-        console.error('Store dashboard data fetch error:', err);
+        console.error('Store dashboard data fetch error:', {
+          message: err instanceof Error ? err.message : String(err),
+          error: err
+        });
         setError('데이터를 불러오는 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);
