@@ -118,12 +118,13 @@ export default function StoreDashboard() {
     if (typeof address === 'string') return address;
     
     // JSON 객체인 경우
-    if (address.full_address) return address.full_address;
+    const addressData = address as any;
+    if (addressData.full_address) return addressData.full_address;
     
     const parts = [
-      address.street,
-      address.city,
-      address.district,
+      addressData.street,
+      addressData.city,
+      addressData.district,
     ].filter(Boolean);
     
     return parts.length > 0 ? parts.join(' ') : '주소 없음';

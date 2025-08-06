@@ -152,8 +152,8 @@ export default function StoresManagementPage() {
       const processedBrands = brandsData?.map(brand => ({
         id: brand.id,
         name: brand.name,
-        code: brand.code,
-        type: brand.type || 'restaurant'
+        code: brand.code || 'N/A',
+        type: 'restaurant' // 임시 데이터
       })) || [];
 
       setBrands(processedBrands);

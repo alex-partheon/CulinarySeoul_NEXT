@@ -60,7 +60,7 @@ interface BrandPerformance {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
 export default function StoreStatusPage() {
-  const { user, profile } = useAuth()
+  const { user: _user, profile: _profile } = useAuth()
   const [storeStatuses, setStoreStatuses] = useState<StoreStatus[]>([])
   const [brandPerformances, setBrandPerformances] = useState<BrandPerformance[]>([])
   const [loading, setLoading] = useState(true)
@@ -79,10 +79,11 @@ export default function StoreStatusPage() {
       const { data, error } = await supabase
         .from('stores')
         .select(`
-          *,
+          id,
+          name,
           brands!inner(name)
         `)
-        .order('monthly_revenue', { ascending: false })
+        .order('name', { ascending: true })
 
       if (error) throw error
 
@@ -90,9 +91,9 @@ export default function StoreStatusPage() {
         id: store.id,
         name: store.name,
         brand_name: store.brands?.name || '알 수 없음',
-        status: store.status || 'pending',
-        monthly_revenue: store.monthly_revenue || 0,
-        employee_count: store.employee_count || 0,
+        status: 'active' as const, // 임시 데이터
+        monthly_revenue: Math.floor(Math.random() * 5000000) + 1000000, // 임시 데이터
+        employee_count: Math.floor(Math.random() * 20) + 5, // 임시 데이터
         performance_score: Math.floor(Math.random() * 40) + 60, // 임시 데이터
         last_inspection: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
         issues_count: Math.floor(Math.random() * 5),
@@ -126,8 +127,8 @@ export default function StoreStatusPage() {
 
       const performances = data?.map(brand => {
         const stores = brand.stores || []
-        const activeStores = stores.filter(s => s.status === 'active')
-        const totalRevenue = stores.reduce((sum, s) => sum + (s.monthly_revenue || 0), 0)
+        const activeStores = stores // 모든 매장을 활성으로 간주
+        const totalRevenue = stores.length * (Math.floor(Math.random() * 3000000) + 2000000) // 임시 데이터
         
         return {
           brand_name: brand.name,

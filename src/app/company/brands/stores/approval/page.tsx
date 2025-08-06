@@ -168,7 +168,7 @@ export default function StoreApprovalPage() {
       ];
 
       setPendingStores(mockData);
-    } catch (error) {
+    } catch (_error) {
       console.error('승인 대기 매장 데이터 로딩 실패:', {
         message: error instanceof Error ? error.message : String(error),
         error: error
@@ -184,12 +184,12 @@ export default function StoreApprovalPage() {
       // 실제 승인 로직 구현
       toast.success('매장이 승인되었습니다.');
       setPendingStores((prev) => prev.filter((store) => store.id !== storeId));
-    } catch (_error) {
+    } catch (error) {
       toast.error('매장 승인에 실패했습니다.');
     }
   };
 
-  const handleReject = async (storeId: string, reason: string) => {
+  const handleApprove = async (storeId: string, _reason: string) => {
     try {
       // 실제 거부 로직 구현
       toast.success('매장 신청이 거부되었습니다.');
